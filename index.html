@@ -13,7 +13,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
         }
         
         body {
@@ -352,21 +352,22 @@
             background: linear-gradient(135deg, #e67e22, #d35400);
             color: white;
             border: none;
-            padding: 12px 28px;
-            border-radius: 30px;
+            padding: 12px 12px;
+            border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
             transition: all 0.3s ease;
-            font-size: 1rem;
-            font-weight: 500;
+            font-size: 1.2rem;
+            width: 44px;
+            height: 44px;
             box-shadow: 0 4px 15px rgba(230, 126, 34, 0.5);
         }
         
         .admin-toggle-btn:hover {
             background: linear-gradient(135deg, #d35400, #e67e22);
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.05);
             box-shadow: 0 6px 20px rgba(230, 126, 34, 0.6);
         }
         
@@ -422,23 +423,11 @@
         }
         
         /* 标记颜色 */
-        .marker-monitor-surface .marker-pin {
+        .marker-surface .marker-pin {
             background: linear-gradient(135deg, #4CAF50, #3d8b40);
         }
-        .marker-monitor-ground .marker-pin {
+        .marker-ground .marker-pin {
             background: linear-gradient(135deg, #1abc9c, #16a085);
-        }
-        .marker-facility .marker-pin {
-            background: linear-gradient(135deg, #2196F3, #1976D2);
-        }
-        .marker-drain .marker-pin {
-            background: linear-gradient(135deg, #FF9800, #F57C00);
-        }
-        .marker-outlet .marker-pin {
-            background: linear-gradient(135deg, #9C27B0, #7B1FA2);
-        }
-        .marker-well .marker-pin {
-            background: linear-gradient(135deg, #795548, #5D4037);
         }
 
         /* ==== 防止F12查看的覆盖层 ==== */
@@ -532,6 +521,9 @@
             .admin-toggle-btn {
                 width: 100%;
                 justify-content: center;
+                border-radius: 30px;
+                width: auto;
+                padding: 12px 20px;
             }
             
             .control-panel, .data-panel {
@@ -552,6 +544,14 @@
                 right: 15px;
                 max-width: 200px;
             }
+        }
+        
+        /* ==== 特殊输入样式 ==== */
+        .value-info {
+            font-size: 0.85rem;
+            color: #a8e6ff;
+            margin-top: 4px;
+            display: block;
         }
     </style>
 </head>
@@ -575,14 +575,14 @@
         <div class="header-right">
             <div class="map-switcher">
                 <button class="map-switch-btn active" id="map233-btn" onclick="switchMap('233')">
-                    <i class="fas fa-map"></i> 监测图1
+                    <i class="fas fa-map"></i> 图A
                 </button>
                 <button class="map-switch-btn" id="map666-btn" onclick="switchMap('666')">
-                    <i class="fas fa-map-marked-alt"></i> 监测图2
+                    <i class="fas fa-map-marked-alt"></i> 图B
                 </button>
             </div>
             <button class="admin-toggle-btn" id="admin-toggle-btn" title="管理员登录/登出">
-                <i class="fas fa-user-lock"></i> 管理登录
+                <i class="fas fa-user-lock"></i>
             </button>
         </div>
     </div>
@@ -599,22 +599,6 @@
                 <div class="legend-item">
                     <div class="legend-icon" style="background:#1abc9c"></div>
                     <span>水质监测点 (地下水)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-icon" style="background:#2196F3"></div>
-                    <span>处理设施</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-icon" style="background:#FF9800"></div>
-                    <span>截水沟</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-icon" style="background:#9C27B0"></div>
-                    <span>排水口</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-icon" style="background:#795548"></div>
-                    <span>监测井</span>
                 </div>
             </div>
 
@@ -670,7 +654,8 @@
                     </div>
                     <div class="form-group">
                         <label for="edit-manganese">锰监测值(mg/L)</label>
-                        <input type="number" id="edit-manganese" step="0.01" placeholder="输入锰监测值">
+                        <input type="text" id="edit-manganese" placeholder="输入锰监测值 (可输入 <0.01)">
+                        <span class="value-info">可输入数字或"<0.01"格式</span>
                     </div>
                     <div class="form-group">
                         <label for="edit-notes">备注</label>
@@ -684,8 +669,8 @@
         
         <div class="control-panel" id="control-panel">
             <div class="panel-top-buttons">
-                <button class="export-btn" onclick="exportToExcel()" title="导出Excel">↓</button>
-                <button class="collapse-btn" onclick="toggleControlPanel()" title="收缩面板">‹</button>
+                <button class="export-btn" onclick="exportToExcel()" title="导出Excel"><i class="fas fa-file-export"></i></button>
+                <button class="collapse-btn" onclick="toggleControlPanel()" title="收缩面板"><i class="fas fa-chevron-left"></i></button>
             </div>
             
             <div class="panel-content">
@@ -700,17 +685,13 @@
                         
                         <div class="form-group">
                             <label for="point-code">点位编号</label>
-                            <input type="text" id="point-code" placeholder="例如: A1, B2" disabled>
+                            <input type="text" id="point-code" placeholder="例如: W1, 1#" disabled>
                         </div>
 
                         <div class="form-group">
                             <label for="point-type">点位类型</label>
-                            <select id="point-type" disabled onchange="toggleWaterTypeSelection()">
+                            <select id="point-type" disabled>
                                 <option value="monitor">水质监测点</option>
-                                <option value="facility">处理设施</option>
-                                <option value="drain">截水沟</option>
-                                <option value="outlet">排水口</option>
-                                <option value="well">监测井</option>
                             </select>
                         </div>
                         
@@ -724,7 +705,7 @@
 
                         <div class="form-group">
                             <label for="point-name">点位名称</label>
-                            <input type="text" id="point-name" placeholder="例如: 1号水质监测站" disabled>
+                            <input type="text" id="point-name" placeholder="例如: 1# XXXXX" disabled>
                         </div>
                         
                         <div class="form-group">
@@ -734,7 +715,8 @@
                         
                         <div class="form-group">
                             <label for="point-manganese">锰监测值(mg/L)</label>
-                            <input type="number" id="point-manganese" step="00.01" placeholder="输入锰监测值" disabled>
+                            <input type="text" id="point-manganese" placeholder="输入锰监测值 (可输入 <0.01)" disabled>
+                            <span class="value-info">可输入数字或"<0.01"格式</span>
                         </div>
                         
                         <div class="form-group">
@@ -887,39 +869,15 @@
         };
 
         const pointIcons = {
-            monitor: {
-                className: 'custom-marker marker-monitor-surface',
+            surface: { // 地表水监测点
+                className: 'custom-marker marker-surface',
                 html: '<div class="marker-pin"><i class="fas fa-water" style="font-size: 18px;"></i></div><div class="marker-label"></div>',
                 iconSize: [30, 30],
                 iconAnchor: [15, 30]
             },
-            monitor_ground: {
-                className: 'custom-marker marker-monitor-ground',
+            ground: { // 地下水监测点
+                className: 'custom-marker marker-ground',
                 html: '<div class="marker-pin"><i class="fas fa-tint" style="font-size: 18px;"></i></div><div class="marker-label"></div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 30]
-            },
-            facility: {
-                className: 'custom-marker marker-facility',
-                html: '<div class="marker-pin"><i class="fas fa-industry" style="font-size: 16px;"></i></div><div class="marker-label"></div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 30]
-            },
-            drain: {
-                className: 'custom-marker marker-drain',
-                html: '<div class="marker-pin"><i class="fas fa-stream" style="font-size: 16px;"></i></div><div class="marker-label"></div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 30]
-            },
-            outlet: {
-                className: 'custom-marker marker-outlet',
-                html: '<div class="marker-pin"><i class="fas fa-water-lower" style="font-size: 16px;"></i></div><div class="marker-label"></div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 30]
-            },
-            well: {
-                className: 'custom-marker marker-well',
-                html: '<div class="marker-pin"><i class="fas fa-faucet-drip" style="font-size: 16px;"></i></div><div class="marker-label"></div>',
                 iconSize: [30, 30],
                 iconAnchor: [15, 30]
             }
@@ -977,7 +935,7 @@
             closeDataPanel();
             resetAddPointForm();
             refreshPointList();
-            showToast(`已切换至平面图 ${mapId === '233' ? 'A' : 'B'}`, 'info');
+            showToast(`已切换至图 ${mapId === '233' ? 'A' : 'B'}`, 'info');
         };
 
         function renderMarkers() {
@@ -996,12 +954,9 @@
         }
 
         function createMarker(pointData, isTemp = false) {
-            let iconKey = pointData.type;
-            if (pointData.type === 'monitor') {
-                iconKey = pointData.waterType === 'ground' ? 'monitor_ground' : 'monitor';
-            }
+            const waterType = pointData.waterType || 'surface';
+            const iconConfig = pointIcons[waterType];
             
-            const iconConfig = pointIcons[iconKey];
             const customIcon = L.divIcon({
                 className: `${iconConfig.className} ${isTemp ? 'marker-temp' : ''}`,
                 html: iconConfig.html,
@@ -1011,7 +966,7 @@
 
             const marker = L.marker([pointData.lat, pointData.lng], {
                 icon: customIcon,
-                draggable: isLoggedIn && !isTemp
+                draggable: isLoggedIn // 仅管理员可拖动
             }).addTo(map);
 
             const labelElement = marker._icon.querySelector('.marker-label');
@@ -1032,7 +987,7 @@
             });
 
             marker.on('dragend', function(event) {
-                if (!isLoggedIn) return;
+                if (!isLoggedIn) return; // 再次确认权限
                 const newLatLng = event.target.getLatLng();
                 const points = allMapsPointsData[currentMapId];
                 const pointIndex = points.findIndex(p => p.id === pointData.id);
@@ -1068,18 +1023,18 @@
                     map.removeLayer(currentMarker);
                 }
                 
-                const pointType = document.getElementById('point-type').value;
                 const waterType = document.getElementById('water-type').value;
                 
+                // 创建一个模拟的pointData对象给createMarker使用，仅用于临时标记
                 const tempPointData = {
                     lat: e.latlng.lat,
                     lng: e.latlng.lng,
-                    type: pointType,
+                    type: 'monitor',
                     waterType: waterType,
-                    code: '临时',
+                    code: '临时', // 临时标记显示“临时”
                     name: '临时点位'
                 };
-                currentMarker = createMarker(tempPointData, true);
+                currentMarker = createMarker(tempPointData, true); // 传递 isTemp = true
                 
                 currentMarkerLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
                 showToast('已选择地图位置，可拖动调整。', 'info');
@@ -1140,11 +1095,19 @@
             
             let latestHtml = '<tr><td colspan="5" style="text-align:center;">暂无监测记录</td></tr>';
             if (latestRecord) {
+                // 处理锰的显示值
+                let manganeseDisplay = latestRecord.manganese;
+                if (typeof manganeseDisplay === 'string' && manganeseDisplay.startsWith('<')) {
+                    manganeseDisplay = `<span style="color:#FF9800">${manganeseDisplay}</span>`;
+                } else if (latestRecord.manganese === -0.01) {
+                    manganeseDisplay = '<span style="color:#FF9800">&lt;0.01</span>';
+                }
+                
                 latestHtml = `
                     <tr>
                         <td>${latestRecord.timestamp}</td>
                         <td>${(latestRecord.zinc !== undefined && latestRecord.zinc !== null) ? latestRecord.zinc : '未记录'}</td>
-                        <td>${(latestRecord.manganese !== undefined && latestRecord.manganese !== null) ? latestRecord.manganese : '未记录'}</td>
+                        <td>${manganeseDisplay}</td>
                         <td>${latestRecord.notes || '无'}</td>
                         <td>${latestRecord.operator || '未知'}</td>
                     </tr>
@@ -1156,11 +1119,19 @@
             if (point.records && point.records.length > 0) {
                 const sortedRecords = [...point.records].reverse();
                 sortedRecords.forEach(record => {
+                    // 处理锰的显示值
+                    let manganeseDisplay = record.manganese;
+                    if (typeof manganeseDisplay === 'string' && manganeseDisplay.startsWith('<')) {
+                        manganeseDisplay = `<span style="color:#FF9800">${manganeseDisplay}</span>`;
+                    } else if (record.manganese === -0.01) {
+                        manganeseDisplay = '<span style="color:#FF9800">&lt;0.01</span>';
+                    }
+                    
                     historyHtml += `
                         <tr>
                             <td>${record.timestamp}</td>
                             <td>${(record.zinc !== undefined && record.zinc !== null) ? record.zinc : '未记录'}</td>
-                            <td>${(record.manganese !== undefined && record.manganese !== null) ? record.manganese : '未记录'}</td>
+                            <td>${manganeseDisplay}</td>
                             <td>${record.notes || '无'}</td>
                             <td>${record.operator || '未知'}</td>
                             <td class="admin-only-cell" style="${isLoggedIn ? '' : 'display: none;'}">
@@ -1209,7 +1180,14 @@
             if (!record) return;
             
             document.getElementById('edit-zinc').value = record.zinc || '';
-            document.getElementById('edit-manganese').value = record.manganese || '';
+            
+            // 处理锰的显示值
+            if (record.manganese === -0.01 || (typeof record.manganese === 'string' && record.manganese.startsWith('<'))) {
+                document.getElementById('edit-manganese').value = '<0.01';
+            } else {
+                document.getElementById('edit-manganese').value = record.manganese || '';
+            }
+            
             document.getElementById('edit-notes').value = record.notes || '';
             
             document.getElementById('edit-form').style.display = 'block';
@@ -1226,12 +1204,31 @@
             if (!selectedPointId || !editingRecordId) return;
             
             const zincValue = document.getElementById('edit-zinc').value;
-            const manganeseValue = document.getElementById('edit-manganese').value;
+            let manganeseValue = document.getElementById('edit-manganese').value;
             const notes = document.getElementById('edit-notes').value;
 
-            if (isNaN(parseFloat(zincValue)) || isNaN(parseFloat(manganeseValue)) || parseFloat(zincValue) < 0 || parseFloat(manganeseValue) < 0) {
-                showToast('锌/锰监测值必须为非负数字！', 'error');
+            // 验证锌值（必须是数字）
+            if (zincValue && isNaN(parseFloat(zincValue))) {
+                showToast('锌监测值必须是数字！', 'error');
                 return;
+            }
+            
+            // 处理锰值（允许输入"<0.01"格式）
+            let manganeseValueToSave = manganeseValue;
+            if (manganeseValue.startsWith('<')) {
+                // 尝试提取数值
+                const numPart = manganeseValue.replace(/</g, '').trim();
+                if (isNaN(parseFloat(numPart))) {
+                    showToast('锰监测值格式错误！请使用"<0.01"格式或数字。', 'error');
+                    return;
+                }
+                // 特殊标记为-0.01
+                manganeseValueToSave = -0.01;
+            } else if (manganeseValue && isNaN(parseFloat(manganeseValue))) {
+                showToast('锰监测值必须是数字或"<0.01"格式！', 'error');
+                return;
+            } else {
+                manganeseValueToSave = parseFloat(manganeseValue);
             }
             
             const points = allMapsPointsData[currentMapId];
@@ -1239,8 +1236,8 @@
             if (point && point.records) {
                 const recordIndex = point.records.findIndex(r => r.id === editingRecordId);
                 if (recordIndex !== -1) {
-                    point.records[recordIndex].zinc = parseFloat(zincValue);
-                    point.records[recordIndex].manganese = parseFloat(manganeseValue);
+                    point.records[recordIndex].zinc = zincValue ? parseFloat(zincValue) : null;
+                    point.records[recordIndex].manganese = manganeseValueToSave;
                     point.records[recordIndex].notes = notes;
                     point.records[recordIndex].timestamp = new Date().toLocaleString();
                     point.records[recordIndex].operator = operatorName;
@@ -1248,12 +1245,17 @@
                     if (!point.history) {
                         point.history = [];
                     }
+                    
+                    // 显示正确的锰值
+                    let displayManganese = typeof manganeseValueToSave === 'number' && manganeseValueToSave < 0 ? 
+                        '<0.01' : manganeseValueToSave;
+                        
                     point.history.unshift({
                         id: Date.now(),
                         action: '编辑记录',
                         timestamp: new Date().toLocaleString(),
                         operator: operatorName,
-                        note: `修改了记录 (锌: ${zincValue}, 锰: ${manganeseValue})`
+                        note: `修改了记录 (锌: ${zincValue || '未记录'}, 锰: ${displayManganese || '未记录'})`
                     });
                     
                     saveAllPointsData();
@@ -1308,19 +1310,38 @@
 
             const pointCode = document.getElementById('point-code').value.trim();
             const pointName = document.getElementById('point-name').value.trim();
-            const pointType = document.getElementById('point-type').value;
             const waterType = document.getElementById('water-type').value;
             const zincValue = document.getElementById('point-zinc').value;
-            const manganeseValue = document.getElementById('point-manganese').value;
+            let manganeseValue = document.getElementById('point-manganese').value;
             const notes = document.getElementById('point-notes').value;
             
             if (!pointName || !pointCode) {
                 showToast('请输入点位名称和点位编号！', 'error');
                 return;
             }
-            if (isNaN(parseFloat(zincValue)) || isNaN(parseFloat(manganeseValue)) || parseFloat(zincValue) < 0 || parseFloat(manganeseValue) < 0) {
-                showToast('锌/锰监测值必须为非负数字！', 'error');
+            
+            // 验证锌值（必须是数字）
+            if (zincValue && isNaN(parseFloat(zincValue))) {
+                showToast('锌监测值必须是数字！', 'error');
                 return;
+            }
+            
+            // 处理锰值（允许输入"<0.01"格式）
+            let manganeseValueToSave = manganeseValue;
+            if (manganeseValue.startsWith('<')) {
+                // 尝试提取数值
+                const numPart = manganeseValue.replace(/</g, '').trim();
+                if (isNaN(parseFloat(numPart))) {
+                    showToast('锰监测值格式错误！请使用"<0.01"格式或数字。', 'error');
+                    return;
+                }
+                // 特殊标记为-0.01
+                manganeseValueToSave = -0.01;
+            } else if (manganeseValue && isNaN(parseFloat(manganeseValue))) {
+                showToast('锰监测值必须是数字或"<0.01"格式！', 'error');
+                return;
+            } else {
+                manganeseValueToSave = manganeseValue ? parseFloat(manganeseValue) : null;
             }
 
             let latlng;
@@ -1338,8 +1359,8 @@
             
             const recordData = {
                 id: Date.now(),
-                zinc: parseFloat(zincValue),
-                manganese: parseFloat(manganeseValue),
+                zinc: zincValue ? parseFloat(zincValue) : null,
+                manganese: manganeseValueToSave,
                 notes: notes,
                 timestamp: new Date().toLocaleString(),
                 operator: operatorName
@@ -1350,7 +1371,6 @@
                 if (pointIndex !== -1) {
                     points[pointIndex].name = pointName;
                     points[pointIndex].code = pointCode;
-                    points[pointIndex].type = pointType;
                     points[pointIndex].waterType = waterType;
 
                     if (zincValue || manganeseValue || notes) {
@@ -1362,12 +1382,17 @@
                         if (!points[pointIndex].history) {
                             points[pointIndex].history = [];
                         }
+                        
+                        // 显示正确的锰值
+                        let displayManganese = typeof manganeseValueToSave === 'number' && manganeseValueToSave < 0 ? 
+                            '<0.01' : manganeseValueToSave;
+                            
                         points[pointIndex].history.unshift({
                             id: Date.now(),
                             action: '添加记录',
                             timestamp: new Date().toLocaleString(),
                             operator: operatorName,
-                            note: `添加了新的监测记录 (锌: ${zincValue}, 锰: ${manganeseValue})`
+                            note: `添加了新的监测记录 (锌: ${zincValue || '未记录'}, 锰: ${displayManganese || '未记录'})`
                         });
                         points[pointIndex].timestamp = new Date().toLocaleString();
                         showToast('监测记录已成功添加/更新！', 'success');
@@ -1393,7 +1418,7 @@
                     mapId: currentMapId,
                     code: pointCode,
                     name: pointName,
-                    type: pointType,
+                    type: 'monitor',
                     waterType: waterType,
                     lat: latlng.lat,
                     lng: latlng.lng,
@@ -1438,12 +1463,10 @@
             selectedPointId = null;
             document.getElementById('point-code').value = '';
             document.getElementById('point-name').value = '';
-            document.getElementById('point-type').value = 'monitor';
             document.getElementById('water-type').value = 'surface';
             document.getElementById('point-zinc').value = '';
             document.getElementById('point-manganese').value = '';
             document.getElementById('point-notes').value = '';
-            toggleWaterTypeSelection();
             if (currentMarker) {
                 map.removeLayer(currentMarker);
                 currentMarker = null;
@@ -1470,9 +1493,7 @@
             if (point) {
                 document.getElementById('point-code').value = point.code || '';
                 document.getElementById('point-name').value = point.name;
-                document.getElementById('point-type').value = point.type;
                 document.getElementById('water-type').value = point.waterType || 'surface';
-                toggleWaterTypeSelection();
                 
                 document.getElementById('point-zinc').value = '';
                 document.getElementById('point-manganese').value = '';
@@ -1506,9 +1527,7 @@
                 selectedPointId = pointId;
                 document.getElementById('point-code').value = point.code || '';
                 document.getElementById('point-name').value = point.name;
-                document.getElementById('point-type').value = point.type;
                 document.getElementById('water-type').value = point.waterType || 'surface';
-                toggleWaterTypeSelection();
 
                 document.getElementById('point-zinc').value = '';
                 document.getElementById('point-manganese').value = '';
@@ -1590,11 +1609,10 @@
                 pointItem.dataset.id = point.id;
                 pointItem.innerHTML = `
                     <div>
-                        <span class="point-type ${getTypeClass(point.type)}">${getTypeName(point.type)}</span>
+                        <span class="point-type ${getWaterTypeClass(point.waterType || 'surface')}">${getWaterTypeName(point.waterType || 'surface')}</span>
                         <strong>${point.name}</strong> (${point.code || '无编号'})
                     </div>
                     <div style="margin-top:5px;font-size:0.9rem;color:#b0d0ff">
-                        ${point.type === 'monitor' ? `水体类型: ${getWaterTypeName(point.waterType || 'unknown')}<br>` : ''}
                         记录次数: ${point.records ? point.records.length : 0}<br>
                         最后更新: ${point.records && point.records.length > 0 ? point.records[point.records.length - 1].timestamp : '无记录'}
                     </div>
@@ -1616,54 +1634,28 @@
             });
         }
         
-        function getTypeName(type) {
-            const names = {
-                monitor: '水质监测点',
-                facility: '处理设施',
-                drain: '截水沟',
-                outlet: '排水口',
-                well: '监测井'
-            };
-            return names[type] || type;
-        }
-
         function getWaterTypeName(waterType) {
             const names = {
-                surface: '地表水',
-                ground: '地下水',
-                unknown: '未知'
+                surface: '地表水监测点',
+                ground: '地下水监测点'
             };
             return names[waterType] || waterType;
         }
         
-        function getTypeClass(type) {
+        function getWaterTypeClass(waterType) {
             const classes = {
-                monitor: 'type-monitor',
-                facility: 'type-facility',
-                drain: 'type-drain',
-                outlet: 'type-outlet',
-                well: 'type-well'
+                surface: 'type-monitor',
+                ground: 'type-monitor'
             };
-            return classes[type] || '';
+            return classes[waterType] || '';
         }
 
-        function toggleWaterTypeSelection() {
-            const pointType = document.getElementById('point-type').value;
-            const waterTypeGroup = document.getElementById('water-type-group');
-            if (pointType === 'monitor') {
-                waterTypeGroup.style.display = 'block';
-            } else {
-                waterTypeGroup.style.display = 'none';
-            }
-        }
-        
         window.onload = function() {
             loadAllPointsData();
             initMap();
             refreshPointList();
             
             updateUIPermissions();
-            toggleWaterTypeSelection();
         };
 
         function showToast(message, type = 'info') {
@@ -1697,7 +1689,7 @@
             document.getElementById('add-tab-button').disabled = !isLoggedIn;
             document.getElementById('manage-tab-button').disabled = !isLoggedIn;
             
-            const addPointInputs = ['point-code', 'point-type', 'point-name', 'water-type', 'point-zinc', 'point-manganese', 'point-notes'];
+            const addPointInputs = ['point-code', 'point-name', 'water-type', 'point-zinc', 'point-manganese', 'point-notes'];
             addPointInputs.forEach(id => {
                 document.getElementById(id).disabled = !isLoggedIn;
             });
@@ -1725,11 +1717,9 @@
 
             if (isLoggedIn) {
                 adminToggleButton.classList.add('logged-in');
-                adminToggleButton.innerHTML = `<i class="fas fa-user-check"></i> ${operatorName}`;
                 adminToggleButton.title = `${operatorName} (点击登出)`;
             } else {
                 adminToggleButton.classList.remove('logged-in');
-                adminToggleButton.innerHTML = `<i class="fas fa-user-lock"></i> 管理登录`;
                 adminToggleButton.title = `管理员登录`;
                 resetAddPointForm();
             }
@@ -1855,21 +1845,26 @@
             for (const mapId in allMapsPointsData) {
                 const points = allMapsPointsData[mapId];
                 const recordsSheetData = [
-                    ['地图', '点位名称', '点位编号', '点位类型', '水体类型', '记录时间', '锌监测值(mg/L)', '锰监测值(mg/L)', '备注', '录入员']
+                    ['地图', '点位名称', '点位编号', '水体类型', '记录时间', '锌监测值(mg/L)', '锰监测值(mg/L)', '备注', '录入员']
                 ];
                 
                 points.forEach(point => {
                     if (point.records && point.records.length > 0) {
                         point.records.forEach(record => {
+                            // 处理锰的显示值
+                            let manganeseDisplay = record.manganese;
+                            if (record.manganese === -0.01) {
+                                manganeseDisplay = '<0.01';
+                            }
+                            
                             recordsSheetData.push([
-                                `平面图 ${mapId === '233' ? 'A' : 'B'}`,
+                                `图 ${mapId === '233' ? 'A' : 'B'}`,
                                 point.name,
                                 point.code || '', 
-                                getTypeName(point.type),
-                                point.type === 'monitor' ? getWaterTypeName(point.waterType || '') : 'N/A', 
+                                getWaterTypeName(point.waterType || ''),
                                 record.timestamp,
                                 record.zinc || '',
-                                record.manganese || '',
+                                manganeseDisplay || '',
                                 record.notes || '无',
                                 record.operator || '未知'
                             ]);
@@ -1879,7 +1874,7 @@
                 
                 if (recordsSheetData.length > 1) {
                     const recordsSheet = XLSX.utils.aoa_to_sheet(recordsSheetData);
-                    XLSX.utils.book_append_sheet(wb, recordsSheet, `平面图${mapId === '233' ? 'A' : 'B'}数据`);
+                    XLSX.utils.book_append_sheet(wb, recordsSheet, `图${mapId === '233' ? 'A' : 'B'}数据`);
                 }
             }
             
@@ -1890,8 +1885,6 @@
             XLSX.writeFile(wb, "环境监测数据.xlsx");
             showToast('数据已导出为 Excel 文件！', 'info');
         };
-
-        document.getElementById('point-type').addEventListener('change', toggleWaterTypeSelection);
 
     </script>
 </body>
