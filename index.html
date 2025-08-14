@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        /* ===== 全局样式 ===== */
+        /* ==== 全局样式 ==== */
         * {
             margin: 0;
             padding: 0;
@@ -17,7 +17,7 @@
         }
         
         body {
-            background: #0a1a2a;
+            background: linear-gradient(135deg, #0a1a2a, #0d2b3e);
             color: #e0e7ff;
             overflow: hidden;
             height: 100vh;
@@ -25,7 +25,7 @@
             flex-direction: column;
         }
         
-        /* ===== 头部样式 ===== */
+        /* ==== 头部样式 ==== */
         .company-header {
             background: linear-gradient(to right, #0d5a7e, #0a3a55);
             color: white;
@@ -74,7 +74,7 @@
             font-weight: 300;
         }
         
-        /* ===== 主应用容器 ===== */
+        /* ==== 主应用容器 ==== */
         #app {
             display: flex;
             flex: 1;
@@ -82,7 +82,7 @@
             position: relative;
         }
         
-        /* ===== 地图容器 ===== */
+        /* ==== 地图容器 ==== */
         #map-container {
             flex: 1;
             position: relative;
@@ -96,7 +96,7 @@
             background: #0a1a2a;
         }
         
-        /* ===== 控制面板 ===== */
+        /* ==== 控制面板 ==== */
         .control-panel {
             width: 380px;
             background: rgba(18, 32, 50, 0.92);
@@ -124,7 +124,7 @@
             font-weight: 600;
         }
         
-        /* ===== 表单样式 ===== */
+        /* ==== 表单样式 ==== */
         .form-group {
             margin-bottom: 18px;
         }
@@ -159,7 +159,7 @@
             resize: vertical;
         }
         
-        /* ===== 按钮样式 ===== */
+        /* ==== 按钮样式 ==== */
         button {
             background: linear-gradient(135deg, #4CAF50, #3d8b40);
             color: white;
@@ -186,7 +186,7 @@
             opacity: 0.6;
         }
         
-        /* ===== 图例样式 ===== */
+        /* ==== 图例样式 ==== */
         .legend {
             position: absolute;
             bottom: 25px;
@@ -221,7 +221,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
-        /* ===== 数据面板样式 ===== */
+        /* ==== 数据面板样式 ==== */
         .data-panel {
             position: absolute;
             top: 25px;
@@ -266,7 +266,7 @@
             background: #ff6b5b;
         }
         
-        /* ===== 管理员面板样式 ===== */
+        /* ==== 管理员面板样式 ==== */
         .admin-panel-overlay {
             position: fixed;
             top: 0;
@@ -310,7 +310,7 @@
             gap: 15px;
         }
         
-        /* ===== 地图切换按钮样式 ===== */
+        /* ==== 地图切换按钮样式 ==== */
         .map-switcher {
             display: flex;
             gap: 10px;
@@ -347,7 +347,7 @@
             background: rgba(74, 176, 217, 0.3);
         }
 
-        /* ===== 管理员登录按钮样式 ===== */
+        /* ==== 管理员登录按钮样式 ==== */
         .admin-toggle-btn {
             background: linear-gradient(135deg, #e67e22, #d35400);
             color: white;
@@ -379,7 +379,7 @@
             background: linear-gradient(135deg, #2ecc71, #27ae60);
         }
 
-        /* ===== 自定义标记样式 ===== */
+        /* ==== 自定义标记样式 ==== */
         .custom-marker {
             position: relative;
             cursor: pointer;
@@ -441,7 +441,46 @@
             background: linear-gradient(135deg, #795548, #5D4037);
         }
 
-        /* ===== 响应式设计 ===== */
+        /* ==== 防止F12查看的覆盖层 ==== */
+        #devtools-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a1a2a;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        #devtools-overlay h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #ff4d4d;
+        }
+        
+        #devtools-overlay p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        
+        #devtools-overlay button {
+            width: auto;
+            padding: 12px 40px;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #4CAF50, #3d8b40);
+        }
+
+        /* ==== 响应式设计 ==== */
         @media (max-width: 1200px) {
             .control-panel {
                 width: 350px;
@@ -517,6 +556,13 @@
     </style>
 </head>
 <body>
+    <!-- 防止F12查看的覆盖层 -->
+    <div id="devtools-overlay">
+        <h1><i class="fas fa-lock"></i> 访问受限</h1>
+        <p>为保护系统安全，开发者工具访问已被阻止。如需访问系统功能，请关闭开发者工具并刷新页面。</p>
+        <button onclick="location.reload()"><i class="fas fa-sync-alt"></i> 刷新页面</button>
+    </div>
+    
     <div class="company-header">
         <div class="header-left">
             <i class="fas fa-industry header-icon"></i>
@@ -757,6 +803,72 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        // ==== 防止F12查看代码功能 ====
+        const devtoolsOverlay = document.getElementById('devtools-overlay');
+        
+        function detectDevTools() {
+            const threshold = 160; // 开发者工具打开时窗口大小的变化阈值
+            const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+            const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+            
+            if (widthThreshold || heightThreshold) {
+                devtoolsOverlay.style.display = 'flex';
+                return true;
+            }
+            return false;
+        }
+        
+        // 监听窗口大小变化
+        window.addEventListener('resize', function() {
+            if (detectDevTools()) {
+                console.log('开发者工具已打开，访问被阻止！');
+            }
+        });
+        
+        // 监听按键事件（F12、Ctrl+Shift+I等）
+        document.addEventListener('keydown', function(e) {
+            // F12键
+            if (e.key === 'F12') {
+                e.preventDefault();
+                devtoolsOverlay.style.display = 'flex';
+                return false;
+            }
+            
+            // Ctrl+Shift+I (Chrome, Firefox)
+            if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                devtoolsOverlay.style.display = 'flex';
+                return false;
+            }
+            
+            // Ctrl+Shift+J (Chrome)
+            if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+                e.preventDefault();
+                devtoolsOverlay.style.display = 'flex';
+                return false;
+            }
+            
+            // Ctrl+Shift+C (Chrome)
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                devtoolsOverlay.style.display = 'flex';
+                return false;
+            }
+            
+            // Ctrl+U (查看源代码)
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                devtoolsOverlay.style.display = 'flex';
+                return false;
+            }
+        });
+        
+        // 禁用右键菜单
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+        
+        // ==== 环境监测系统核心功能 ====
         let map = null;
         let currentMapId = '233';
         let allMapsPointsData = { '233': [], '666': [] };
@@ -1000,7 +1112,7 @@
                 const oldPointsData = localStorage.getItem('monitoringPoints');
                 if (oldPointsData) {
                     try {
-                        const parsedOldData = JSON.parse(oldOldData);
+                        const parsedOldData = JSON.parse(oldPointsData);
                         if (Array.isArray(parsedOldData)) {
                             allMapsPointsData['233'] = parsedOldData;
                             localStorage.removeItem('monitoringPoints');
@@ -1780,75 +1892,6 @@
         };
 
         document.getElementById('point-type').addEventListener('change', toggleWaterTypeSelection);
-
-        // ===== 以下是新增的防止F12查看的代码 =====
-
-        // 1. 禁用右键菜单
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            showToast('禁止右键菜单。', 'warning');
-        });
-
-        // 2. 禁用常见键盘快捷键
-        document.addEventListener('keydown', function(e) {
-            // F12
-            if (e.key === 'F12') {
-                e.preventDefault();
-                showToast('禁止F12开发者工具。', 'warning');
-            }
-            // Ctrl+Shift+I (检查元素) 或 Cmd+Option+I (Mac)
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') {
-                e.preventDefault();
-                showToast('禁止Ctrl+Shift+I开发者工具。', 'warning');
-            }
-            // Ctrl+Shift+J (控制台) 或 Cmd+Option+J (Mac)
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'J') {
-                e.preventDefault();
-                showToast('禁止Ctrl+Shift+J开发者工具。', 'warning');
-            }
-            // Ctrl+U (查看源代码) 或 Cmd+U (Mac)
-            if ((e.ctrlKey || e.metaKey) && e.key === 'U') {
-                e.preventDefault();
-                showToast('禁止查看源代码。', 'warning');
-            }
-            // 阻止其他调试快捷键，如 Ctrl+Shift+C (Chrome: 检查元素)
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
-                e.preventDefault();
-                showToast('禁止Ctrl+Shift+C开发者工具。', 'warning');
-            }
-        });
-
-        // 3. 简单的debugger陷阱 (会在开发者工具打开时暂停执行)
-        // 注意：这个方法容易被绕过，且可能对性能有轻微影响。
-        (function() {
-            // 初始检查，当页面加载时如果开发者工具已打开，则会触发暂停
-            // debugger; // 不推荐频繁使用，可能造成性能问题或用户体验差
-
-            // 可以在一个不频繁的定时器中检查，以增加“干扰”
-            // 但请再三考虑其必要性和对用户体验的影响
-            let devtoolsOpened = false;
-            const checkDevTools = () => {
-                // 这是一个非常简单的检测方式，通过检查执行时间来判断
-                // 但它不是万无一失的，且在某些浏览器或特定设置下可能不工作
-                const before = new Date().getTime();
-                // 执行一个可能被调试器中断的操作
-                // debugger; // 再次强调：频繁使用会严重影响用户体验
-
-                const after = new Date().getTime();
-                // 如果执行时间过长（比如超过某个阈值），可能意味着被调试器暂停过
-                if (after - before > 100) { // 100毫秒只是一个示例阈值
-                    if (!devtoolsOpened) {
-                        showToast('检测到开发者工具已打开！', 'warning');
-                        devtoolsOpened = true;
-                    }
-                } else {
-                    devtoolsOpened = false;
-                }
-            };
-
-            // 每隔一段时间执行检查。请慎用，频繁执行会影响性能和用户体验。
-            // setInterval(checkDevTools, 1000); // 示例：每秒检查一次
-        })();
 
     </script>
 </body>
