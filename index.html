@@ -3867,7 +3867,48 @@
 
         // 绑定点位类型选择事件
         document.getElementById('point-type').addEventListener('change', toggleWaterTypeSelection);
+document.addEventListener('keydown', function(e) {
+    // F12键的keyCode是123
+    if (e.keyCode === 123) {
+        e.preventDefault(); // 阻止默认行为
+        return false;
+    }
+    
+    // 禁止Ctrl+Shift+I组合键
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // 禁止Ctrl+U查看源代码
+    if (e.ctrlKey && e.keyCode === 85) {
+        e.preventDefault();
+        return false;
+    }
+});
 
+// 禁止右键菜单
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // 阻止右键菜单弹出
+    return false;
+});
+
+// 简单检测开发者工具是否打开
+let checkDevTools = function() {
+    const threshold = 160;
+    let widthThreshold = window.outerWidth - window.innerWidth > threshold;
+    let heightThreshold = window.outerHeight - window.innerHeight > threshold;
+    
+    if (widthThreshold || heightThreshold) {
+        // 可以在这里添加处理逻辑，如刷新页面或提示信息
+        alert('请不要打开开发者工具');
+        // window.location.reload(); // 可选：刷新页面
+    }
+};
+
+// 定期检查
+setInterval(checkDevTools, 1000);
+        
     </script>
 </body>
 </html>
