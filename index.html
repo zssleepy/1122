@@ -1987,14 +1987,14 @@
                                 record.zinc || '',
                                 manganeseDisplay || '',
                                 record.notes || '无',
-                                记录.操作员 || '未知'
+                                record.operator || '未知'
                             ]);
                         });
-                    输入：}
+                    }
                 });
                 
-                如果 (记录表数据.长度 > 1) {
-                    常量 记录表 = XLSX.工具.aoa_to_sheet(记录表数据);
+                if (recordsSheetData.length > 1) {
+                    const recordsSheet = XLSX.utils.aoa_to_sheet(recordsSheetData);
                     XLSX.utils.book_append_sheet(wb, recordsSheet, `图${mapId === '233' ? 'A' : 'B'}数据`);
                 }
             }
@@ -2008,8 +2008,8 @@
         };
 
         // 新添加：保存数据到GitHub的函数
-        窗口.保存数据到GitHub = 保存数据到GitHub;
+        window.saveDataToGitHub = saveDataToGitHub;
 
-    </脚本>
-</身体>
-    </html>
+    </script>
+</body>
+</html>
