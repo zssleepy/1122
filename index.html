@@ -553,6 +553,24 @@
             margin-top: 4px;
             display: block;
         }
+        
+        /* ==== 新添加的GitHub保存按钮样式 ==== */
+        .github-save-btn {
+            background: linear-gradient(135deg, #6e5494, #8a4ebf);
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .github-save-btn:hover {
+            box-shadow: 0 6px 15px rgba(138, 78, 191, 0.4);
+        }
+        
+        .github-save-btn i {
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -731,6 +749,11 @@
                         </div>
 
                         <button id="save-btn" onclick="savePointData()" disabled>保存监测数据</button>
+                        
+                        <!-- 新添加的GitHub保存按钮 -->
+                        <button id="github-save-btn" class="github-save-btn" onclick="saveDataToGitHub()" style="display: none;">
+                            <i class="fab fa-github"></i> 保存数据到GitHub
+                        </button>
                     </div>
                     
                     <div id="manage-tab" class="tab-content">
@@ -738,6 +761,10 @@
                         <div class="point-list">
                             <div id="points-container"></div>
                         </div>
+                        <!-- 新添加的GitHub保存按钮 -->
+                        <button id="github-save-btn2" class="github-save-btn" onclick="saveDataToGitHub()" style="margin-top: 20px; display: none;">
+                            <i class="fab fa-github"></i> 保存数据到GitHub
+                        </button>
                     </div>
                 </div>
             </div>
@@ -863,8 +890,14 @@
         let isLoggedIn = false;
         let operatorName = '';
 
+        // GitHub配置
+        const GITHUB_USERNAME = 'zssleepy';
+        const GITHUB_REPO = '1';
+        const GITHUB_TOKEN = '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';
+        const DATA_FILE_PATH = 'data.json'; // GitHub仓库中的数据文件路径
+        
         const mapConfigurations = {
-            '233': { imageUrl: '233.jpg', width: 1776, height: 907, minZoom: -1, maxZoom: 4 },
+            '233': { imageUrl: '233.jpg', width: 1776, height: 907, minZoom: -1, maxZoom: 3 },
             '666': { imageUrl: '666.jpg', width: 1920, height: 1279, minZoom: -2, maxZoom: 3 }
         };
 
@@ -896,6 +929,8 @@
         const controlPanel = document.getElementById('control-panel');
         const map233Btn = document.getElementById('map233-btn');
         const map666Btn = document.getElementById('map666-btn');
+        const githubSaveBtn = document.getElementById('github-save-btn');
+        const githubSaveBtn2 = document.getElementById('github-save-btn2');
 
         function initMap() {
             if (map) {
@@ -1081,6 +1116,78 @@
 
         function saveAllPointsData() {
             localStorage.setItem('allMapsPointsData', JSON.stringify(allMapsPointsData));
+        }
+        
+        // 新添加：从GitHub加载数据
+        async function loadDataFromGitHub() {
+            try {
+                const url = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${DATA_FILE_PATH}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`GitHub数据加载失败: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                allMapsPointsData = data;
+                showToast('数据已从GitHub加载!', 'success');
+                return true;
+            } catch (error) {
+                console.error('GitHub数据加载失败:', error);
+                showToast('GitHub数据加载失败，使用本地数据', 'error');
+                return false;
+            }
+        }
+        
+        // 新添加：保存数据到GitHub
+        async function saveDataToGitHub() {
+            if (!isLoggedIn) {
+                showToast('请登录管理员账号才能保存数据。', 'error');
+                return;
+            }
+            
+            try {
+                const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`;
+                
+                // 获取当前文件SHA
+                const getResponse = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'User-Agent': 'Environmental-Monitoring-System'
+                    }
+                });
+                
+                const fileInfo = await getResponse.json();
+                const sha = fileInfo.sha;
+                
+                // 准备更新数据
+                const content = JSON.stringify(allMapsPointsData, null, 2);
+                const encodedContent = btoa(unescape(encodeURIComponent(content)));
+                
+                const updateResponse = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Environmental-Monitoring-System'
+                    },
+                    body: JSON.stringify({
+                        message: `更新环境监测数据 - ${new Date().toLocaleString()}`,
+                        content: encodedContent,
+                        sha: sha
+                    })
+                });
+                
+                if (!updateResponse.ok) {
+                    const errorData = await updateResponse.json();
+                    throw new Error(`GitHub保存失败: ${errorData.message}`);
+                }
+                
+                showToast('数据已成功保存到GitHub!', 'success');
+            } catch (error) {
+                console.error('保存到GitHub失败:', error);
+                showToast(`保存到GitHub失败: ${error.message}`, 'error');
+            }
         }
         
         window.showPointData = function(pointId) {
@@ -1424,7 +1531,7 @@
                     lng: latlng.lng,
                     timestamp: new Date().toLocaleString(),
                     records: [recordData],
-                    history: [{
+                    history: [{ 
                         id: Date.now(),
                         action: '创建点位',
                         timestamp: new Date().toLocaleString(),
@@ -1650,12 +1757,22 @@
             return classes[waterType] || '';
         }
 
-        window.onload = function() {
-            loadAllPointsData();
+        window.onload = async function() {
+            showToast('正在加载数据...', 'info');
+            
+            // 尝试从GitHub加载数据
+            const githubSuccess = await loadDataFromGitHub();
+            
+            // 如果GitHub加载失败，使用本地数据
+            if (!githubSuccess) {
+                loadAllPointsData();
+            }
+            
             initMap();
             refreshPointList();
-            
             updateUIPermissions();
+            
+            showToast('数据加载完成!', 'success');
         };
 
         function showToast(message, type = 'info') {
@@ -1681,9 +1798,13 @@
             if (isLoggedIn) {
                 appContainer.classList.add('admin-mode');
                 controlPanel.classList.add('active');
+                githubSaveBtn.style.display = 'block';
+                githubSaveBtn2.style.display = 'block';
             } else {
                 appContainer.classList.remove('admin-mode');
                 controlPanel.classList.remove('active');
+                githubSaveBtn.style.display = 'none';
+                githubSaveBtn2.style.display = 'none';
             }
 
             document.getElementById('add-tab-button').disabled = !isLoggedIn;
@@ -1866,14 +1987,14 @@
                                 record.zinc || '',
                                 manganeseDisplay || '',
                                 record.notes || '无',
-                                record.operator || '未知'
+                                记录.操作员 || '未知'
                             ]);
                         });
-                    }
+                    输入：}
                 });
                 
-                if (recordsSheetData.length > 1) {
-                    const recordsSheet = XLSX.utils.aoa_to_sheet(recordsSheetData);
+                如果 (记录表数据.长度 > 1) {
+                    常量 记录表 = XLSX.工具.aoa_to_sheet(记录表数据);
                     XLSX.utils.book_append_sheet(wb, recordsSheet, `图${mapId === '233' ? 'A' : 'B'}数据`);
                 }
             }
@@ -1886,6 +2007,9 @@
             showToast('数据已导出为 Excel 文件！', 'info');
         };
 
-    </script>
-</body>
-</html>
+        // 新添加：保存数据到GitHub的函数
+        窗口.保存数据到GitHub = 保存数据到GitHub;
+
+    </脚本>
+</身体>
+    </html>
