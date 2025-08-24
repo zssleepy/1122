@@ -3,799 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>矿业环境监测系统</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>贺州市金琪矿业环境监测系统</title>
+    <!-- 外部库的引入 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        /* 样式保持不变 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0a1a2a, #0d2b3e);
-            color: #e0e7ff;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .company-header {
-            background: linear-gradient(to right, #0d5a7e, #0a3a55);
-            color: white;
-            padding: 12px 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            border-bottom: 3px solid #4CAF50;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        .header-left, .header-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .header-icon {
-            font-size: 2.2rem;
-            color: #4CAF50;
-            text-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
-        }
-
-        .company-title {
-            font-size: 1.8rem;
-            margin: 0;
-            background: linear-gradient(90deg, #ffffff, #e0f7ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-        
-        .company-subtitle {
-            font-size: 1.1rem;
-            opacity: 0.85;
-            margin-top: 4px;
-            color: #a8e6ff;
-            font-weight: 300;
-        }
-        
-        #app {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-            gap: 20px;
-            padding: 20px;
-        }
-        
-        .map-container-wrapper {
-            flex: 1;
-            background: rgba(18, 32, 50, 0.8);
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 120px);
-            min-width: 800px;
-            position: relative;
-        }
-        
-        #map-container {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-            border-radius: 8px;
-            border: 1px solid rgba(74, 175, 80, 0.3);
-            background: #0a1a2a;
-        }
-        
-        #map {
-            width: 100%;
-            height: 100%;
-            background: #0a1a2a;
-            border-radius: 8px;
-        }
-        
-        .data-sidebar {
-            width: 380px;
-            background: rgba(18, 32, 50, 0.92);
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 120px);
-            border: 1px solid rgba(74, 175, 80, 0.3);
-        }
-        
-        .data-sidebar.empty {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #a8e6ff;
-            font-size: 1.1rem;
-        }
-        
-        .control-panel {
-            width: 380px;
-            background: rgba(18, 32, 50, 0.92);
-            backdrop-filter: blur(10px);
-            box-shadow: -5px 0 25px rgba(0,0,0,0.4);
-            padding: 20px;
-            overflow-y: auto;
-            position: relative;
-            display: none;
-            border-left: 1px solid rgba(74, 175, 80, 0.3);
-            transition: all 0.3s ease;
-            z-index: 900;
-        }
-        
-        .control-panel.active {
-            display: block;
-        }
-        
-        /* 添加折叠状态样式 */
-        .control-panel.collapsed {
-            width: 40px !important;
-            padding: 0 !important;
-            overflow: hidden;
-        }
-        
-        .control-panel.collapsed .panel-content {
-            display: none;
-        }
-        
-        .control-panel.collapsed .panel-top-buttons {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding: 10px 0;
-            height: 100%;
-        }
-        
-        .control-panel.collapsed .panel-top-buttons .export-btn {
-            display: none;
-        }
-        
-        .control-panel.collapsed .panel-top-buttons .collapse-btn {
-            width: 30px;
-            height: 30px;
-            margin: 5px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(74, 175, 80, 0.3);
-        }
-        
-        .panel-title {
-            font-size: 1.3rem;
-            color: #e0f7ff;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #4CAF50;
-            font-weight: 600;
-        }
-        
-        .form-group {
-            margin-bottom: 18px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #b0d0ff;
-            font-size: 0.95rem;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid rgba(74, 175, 80, 0.3);
-            border-radius: 6px;
-            font-size: 0.95rem;
-            background-color: rgba(10, 26, 42, 0.6);
-            color: #e0f7ff;
-            transition: all 0.2s ease;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #4CAF50;
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
-        }
-        
-        textarea {
-            height: 100px;
-            resize: vertical;
-        }
-        
-        button {
-            background: linear-gradient(135deg, #4CAF50, #3d8b40);
-            color: white;
-            border: none;
-            padding: 14px 0;
-            width: 100%;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
-        }
-
-        button:disabled {
-            background: #445566;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-                  
-        .data-content {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        
-        .data-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid rgba(74, 175, 80, 0.4);
-        }
-        
-        .close-btn {
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .close-btn:hover {
-            transform: rotate(90deg);
-            background: #ff6b5b;
-        }
-        
-        .admin-panel-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 2000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .admin-panel-content {
-            background: rgba(15, 30, 45, 0.98);
-            border-radius: 15px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
-            padding: 35px;
-            width: 480px;
-            max-width: 90%;
-            color: #ecf0f1;
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(74, 175, 80, 0.4);
-            position: relative;
-        }
-        
-        .admin-panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid rgba(230, 126, 34, 0.45);
-        }
-        
-        .admin-panel-title {
-            font-size: 1.9rem;
-            color: #e67e22;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .map-switcher {
-            display: flex;
-            gap: 10px;
-            background: rgba(20, 40, 60, 0.8);
-            padding: 8px;
-            border-radius: 30px;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(74, 175, 80, 0.3);
-        }
-        
-        .map-switch-btn {
-            background: rgba(25, 45, 65, 0.7);
-            color: #4ab0d9;
-            border: 1px solid #4ab0d9;
-            padding: 10px 22px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.95rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .map-switch-btn.active {
-            background: linear-gradient(135deg, #4ab0d9, #3498db);
-            color: white;
-            box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
-            border-color: transparent;
-        }
-        
-        .map-switch-btn:hover:not(.active) {
-            background: rgba(74, 176, 217, 0.3);
-        }
-
-        .admin-toggle-btn {
-            background: linear-gradient(135deg, #e67e22, #d35400);
-            color: white;
-            border: none;
-            padding: 12px 12px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 1.2rem;
-            width: 44px;
-            height: 44px;
-            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.5);
-        }
-        
-        .admin-toggle-btn:hover {
-            background: linear-gradient(135deg, #d35400, #e67e22);
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 20px rgba(230, 126, 34, 0.6);
-        }
-        
-        .admin-toggle-btn.logged-in {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.5);
-        }
-        
-        .admin-toggle-btn.logged-in:hover {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-        }
-
-        .custom-marker {
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7));
-        }
-        
-        .custom-marker:hover {
-            transform: scale(1.2);
-            z-index: 1000;
-        }
-        
-        .marker-pin {
-            position: absolute;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-            border: 2px solid white;
-            transition: all 0.3s ease;
-        }
-        
-        .marker-label {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.85);
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: bold;
-            white-space: nowrap;
-            top: -12px;
-            left: 32px;
-            min-width: 30px;
-            text-align: center;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-        }
-        
-        #devtools-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a1a2a;
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            display: none;
-        }
-        
-        .value-info {
-            font-size: 0.85rem;
-            color: #a8e6ff;
-            margin-top: 4px;
-            display: block;
-        }
-        
-        .github-config-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(74, 175, 80, 0.3);
-        }
-        
-        .github-config-title {
-            font-size: 1.1rem;
-            color: #e0f7ff;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .github-config-input {
-            background: rgba(10, 26, 42, 0.6);
-            border: 1px solid rgba(74, 175, 80, 0.3);
-            color: #e0f7ff;
-            padding: 10px;
-            border-radius: 6px;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        
-        .cloud-sync-btn {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 0;
-        }
-        
-        .sync-status {
-            margin-top: 10px;
-            padding: 8px;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 0.9rem;
-            display: none;
-        }
-        
-        .sync-success {
-            background: rgba(46, 204, 113, 0.2);
-            border: 1px solid rgba(46, 204, 113, 0.4);
-            color: #2ecc71;
-        }
-        
-        .sync-error {
-            background: rgba(231, 76, 60, 0.2);
-            border: 1px solid rgba(231, 76, 60, 0.4);
-            color: #e74c3c;
-        }
-        
-        .sync-loading {
-            background: rgba(52, 152, 219, 0.2);
-            border: 1px solid rgba(52, 152, 219, 0.4);
-            color: #3498db;
-        }
-        
-        .last-sync {
-            font-size: 0.8rem;
-            color: #a8e6ff;
-            margin-top: 10px;
-            text-align: center;
-            display: none;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-            font-size: 0.9rem;
-        }
-        
-        .data-table th, .data-table td {
-            padding: 8px 12px;
-            text-align: left;
-            border-bottom: 1px solid rgba(74, 175, 80, 0.2);
-        }
-        
-        .data-table th {
-            background: rgba(74, 175, 80, 0.15);
-            color: #4CAF50;
-            font-weight: 600;
-        }
-        
-        .data-table tr:hover {
-            background: rgba(74, 175, 80, 0.1);
-        }
-        
-        .action-btn {
-            padding: 8px 12px;
-            margin: 4px;
-            font-size: 0.85rem;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-        }
-        
-        .btn-warning {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-        }
-        
-        .point-item {
-            background: rgba(10, 26, 42, 0.6);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(74, 175, 80, 0.2);
-            transition: all 0.3s;
-        }
-        
-        .point-item:hover {
-            background: rgba(74, 175, 80, 0.1);
-            border-color: rgba(74, 175, 80, 0.4);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        .point-item strong {
-            color: #4CAF50;
-            font-size: 1.1rem;
-        }
-        
-        .toast-message {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            z-index: 3000;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.95rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .toast-message.show {
-            opacity: 1;
-        }
-        
-        .toast-message.info {
-            border-left: 4px solid #3498db;
-        }
-        
-        .toast-message.success {
-            border-left: 4px solid #2ecc71;
-        }
-        
-        .toast-message.error {
-            border-left: 4px solid #e74c3c;
-        }
-
-        /* 新增样式：管理员模式下更好的布局 */
-        .admin-mode .map-container-wrapper {
-            flex: 2;
-        }
-        
-        .admin-mode .data-sidebar {
-            width: 320px;
-        }
-        
-        .admin-mode .control-panel {
-            position: absolute;
-            right: 20px;
-            top: 20px;
-            height: calc(100vh - 160px);
-            z-index: 1000;
-            border-radius: 12px;
-        }
-        
-        .tab-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        
-        .tab-buttons {
-            display: flex;
-            margin-bottom: 15px;
-            background: rgba(10, 26, 42, 0.6);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .tab-button {
-            flex: 1;
-            padding: 10px;
-            background: none;
-            border: none;
-            color: #b0d0ff;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .tab-button.active {
-            background: rgba(74, 175, 80, 0.3);
-            color: #e0f7ff;
-        }
-        
-        .tab-content {
-            display: none;
-            flex: 1;
-            overflow-y: auto;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-
-        @media (max-width: 1200px) {
-            #app {
-                flex-direction: column;
-                padding: 10px;
-            }
-            
-            .map-container-wrapper {
-                min-width: auto;
-                height: 60vh;
-                margin-bottom: 15px;
-            }
-            
-            .data-sidebar {
-                width: 100%;
-                height: auto;
-                max-height: 40vh;
-            }
-                        
-            .admin-mode .control-panel {
-                position: relative;
-                width: 100%;
-                height: auto;
-                margin-top: 15px;
-                right: auto;
-                top: auto;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .company-header {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .header-left, .header-right {
-                width: 100%;
-            }
-            
-            .map-switcher {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .admin-toggle-btn {
-                border-radius: 30px;
-                padding: 12px 20px;
-                width: auto;
-            }
-            
-            .control-panel {
-                width: 100%;
-                position: fixed;
-                bottom: 0;
-                height: 60vh;
-                border-radius: 20px 20px 0 0;
-            }
-            
-        }
-        
-        /* 新增位置提示样式 */
-        .location-hint {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 30px;
-            z-index: 1000;
-            display: none;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            border: 1px solid rgba(74, 175, 80, 0.3);
-        }
-
-        /* 新增样式：地图容器居中显示 */
-        .map-center-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-        }
-        
-        .map-image {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        
-        /* 新增样式：更好的标记点击效果 */
-        .custom-marker.highlight .marker-pin {
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8), 0 0 20px rgba(76, 175, 80, 0.8);
-            transform: scale(1.2);
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; }
+        body { background: linear-gradient(135deg, #0a1a2a, #0d2b3e); color: #e0e7ff; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        .company-header { background: linear-gradient(to right, #0d5a7e, #0a3a55); color: white; padding: 12px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-bottom: 3px solid #4CAF50; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
+        .header-left, .header-right { display: flex; align-items: center; gap: 15px; }
+        .header-icon { font-size: 2.2rem; color: #4CAF50; text-shadow: 0 0 15px rgba(76, 175, 80, 0.6); }
+        .company-title { font-size: 1.8rem; margin: 0; background: linear-gradient(90deg, #ffffff, #e0f7ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; letter-spacing: 0.5px; }
+        .company-subtitle { font-size: 1.1rem; opacity: 0.85; margin-top: 4px; color: #a8e6ff; font-weight: 300; }
+        #app { display: flex; flex: 1; overflow: hidden; position: relative; gap: 20px; padding: 20px; }
+        .map-container-wrapper { flex: 1; background: rgba(18, 32, 50, 0.8); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); padding: 15px; display: flex; flex-direction: column; height: calc(100vh - 120px); min-width: 800px; position: relative; }
+        #map-container { flex: 1; position: relative; overflow: hidden; border-radius: 8px; border: 1px solid rgba(74, 175, 80, 0.3); background: #0a1a2a; }
+        #map { width: 100%; height: 100%; background: #0a1a2a; border-radius: 8px; }
+        .data-sidebar { width: 380px; background: rgba(18, 32, 50, 0.92); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); padding: 20px; display: flex; flex-direction: column; height: calc(100vh - 120px); border: 1px solid rgba(74, 175, 80, 0.3); }
+        .data-sidebar.empty { align-items: center; justify-content: center; color: #a8e6ff; font-size: 1.1rem; }
+        .control-panel { width: 380px; background: rgba(18, 32, 50, 0.92); backdrop-filter: blur(10px); box-shadow: -5px 0 25px rgba(0,0,0,0.4); padding: 20px; overflow-y: auto; position: relative; display: none; border-left: 1px solid rgba(74, 175, 80, 0.3); transition: all 0.3s ease; z-index: 900; }
+        .control-panel.active { display: block; }
+        .control-panel.collapsed { width: 40px !important; padding: 0 !important; overflow: hidden; }
+        .control-panel.collapsed .panel-content { display: none; }
+        .control-panel.collapsed .panel-top-buttons { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px 0; height: 100%; }
+        .control-panel.collapsed .panel-top-buttons .export-btn { display: none; }
+        .control-panel.collapsed .panel-top-buttons .collapse-btn { width: 30px; height: 30px; margin: 5px 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(74, 175, 80, 0.3); }
+        .panel-title { font-size: 1.3rem; color: #e0f7ff; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #4CAF50; font-weight: 600; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #b0d0ff; font-size: 0.95rem; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid rgba(74, 175, 80, 0.3); border-radius: 6px; font-size: 0.95rem; background-color: rgba(10, 26, 42, 0.6); color: #e0f7ff; transition: all 0.2s ease; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #4CAF50; box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); }
+        textarea { height: 100px; resize: vertical; }
+        button { background: linear-gradient(135deg, #4CAF50, #3d8b40); color: white; border: none; padding: 14px 0; width: 100%; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: all 0.3s; font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4); }
+        button:disabled { background: #445566; cursor: not-allowed; opacity: 0.6; }
+        .data-content { flex: 1; overflow-y: auto; padding-right: 10px; }
+        .data-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid rgba(74, 175, 80, 0.4); }
+        .close-btn { background: #f44336; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .close-btn:hover { transform: rotate(90deg); background: #ff6b5b; }
+        .admin-panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .admin-panel-content { background: rgba(15, 30, 45, 0.98); border-radius: 15px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8); padding: 35px; width: 480px; max-width: 90%; color: #ecf0f1; backdrop-filter: blur(12px); border: 1px solid rgba(74, 175, 80, 0.4); position: relative; }
+        .admin-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid rgba(230, 126, 34, 0.45); }
+        .admin-panel-title { font-size: 1.9rem; color: #e67e22; display: flex; align-items: center; gap: 15px; }
+        .map-switcher { display: flex; gap: 10px; background: rgba(20, 40, 60, 0.8); padding: 8px; border-radius: 30px; backdrop-filter: blur(8px); border: 1px solid rgba(74, 175, 80, 0.3); }
+        .map-switch-btn { background: rgba(25, 45, 65, 0.7); color: #4ab0d9; border: 1px solid #4ab0d9; padding: 10px 22px; border-radius: 25px; cursor: pointer; transition: all 0.3s ease; font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .map-switch-btn.active { background: linear-gradient(135deg, #4ab0d9, #3498db); color: white; box-shadow: 0 0 20px rgba(52, 152, 219, 0.6); border-color: transparent; }
+        .map-switch-btn:hover:not(.active) { background: rgba(74, 176, 217, 0.3); }
+        .admin-toggle-btn { background: linear-gradient(135deg, #e67e22, #d35400); color: white; border: none; padding: 12px 12px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; font-size: 1.2rem; width: 44px; height: 44px; box-shadow: 0 4px 15px rgba(230, 126, 34, 0.5); }
+        .admin-toggle-btn:hover { background: linear-gradient(135deg, #d35400, #e67e22); transform: translateY(-2px) scale(1.05); box-shadow: 0 6px 20px rgba(230, 126, 34, 0.6); }
+        .admin-toggle-btn.logged-in { background: linear-gradient(135deg, #27ae60, #2ecc71); box-shadow: 0 4px 15px rgba(46, 204, 113, 0.5); }
+        .admin-toggle-btn.logged-in:hover { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .custom-marker { position: absolute; cursor: pointer; transition: all 0.3s ease; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7)); z-index: 500; }
+        .custom-marker:hover, .custom-marker.highlight { transform: scale(1.2); z-index: 1000; }
+        .marker-pin { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.6); border: 2px solid white; transition: all 0.3s ease; }
+        .marker-label { position: absolute; background: rgba(0, 0, 0, 0.85); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; white-space: nowrap; top: -12px; left: 32px; min-width: 30px; text-align: center; box-shadow: 0 3px 8px rgba(0,0,0,0.4); }
+        #devtools-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a1a2a; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; color: white; text-align: center; padding: 20px; display: none; }
+        .value-info { font-size: 0.85rem; color: #a8e6ff; margin-top: 4px; display: block; }
+        .github-config-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(74, 175, 80, 0.3); }
+        .github-config-title { font-size: 1.1rem; color: #e0f7ff; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .cloud-sync-btn { background: linear-gradient(135deg, #3498db, #2980b9); display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 0; }
+        .sync-status { margin-top: 10px; padding: 8px; border-radius: 6px; text-align: center; font-size: 0.9rem; display: none; }
+        .sync-success { background: rgba(46, 204, 113, 0.2); border: 1px solid rgba(46, 204, 113, 0.4); color: #2ecc71; }
+        .sync-error { background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.4); color: #e74c3c; }
+        .sync-loading { background: rgba(52, 152, 219, 0.2); border: 1px solid rgba(52, 152, 219, 0.4); color: #3498db; }
+        .last-sync { font-size: 0.8rem; color: #a8e6ff; margin-top: 10px; text-align: center; display: none; }
+        .data-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
+        .data-table th, .data-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid rgba(74, 175, 80, 0.2); }
+        .data-table th { background: rgba(74, 175, 80, 0.15); color: #4CAF50; font-weight: 600; }
+        .data-table tr:hover { background: rgba(74, 175, 80, 0.1); }
+        .action-btn { padding: 8px 12px; margin: 4px; font-size: 0.85rem; border-radius: 4px; transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .btn-warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .btn-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .point-item { background: rgba(10, 26, 42, 0.6); border-radius: 8px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(74, 175, 80, 0.2); transition: all 0.3s; cursor: pointer; }
+        .point-item:hover { background: rgba(74, 175, 80, 0.1); border-color: rgba(74, 175, 80, 0.4); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .point-item strong { color: #4CAF50; font-size: 1.1rem; }
+        .toast-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: white; padding: 12px 24px; border-radius: 30px; z-index: 3000; opacity: 0; transition: opacity 0.3s; font-size: 0.95rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); pointer-events: none; }
+        .toast-message.show { opacity: 1; }
+        .toast-message.info { border-left: 4px solid #3498db; }
+        .toast-message.success { border-left: 4px solid #2ecc71; }
+        .toast-message.error { border-left: 4px solid #e74c3c; }
+        .location-hint { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: #fff; padding: 10px 20px; border-radius: 30px; z-index: 1000; display: none; font-size: 0.9rem; box-shadow: 0 4px 15px rgba(0,0,0,0.4); border: 1px solid rgba(74, 175, 80, 0.3); }
+        .map-center-container { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; overflow: auto; }
+        .map-image { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .tab-buttons { display: flex; margin-bottom: 20px; border-bottom: 1px solid #4CAF50; }
+        .tab-button { width: 50%; background: transparent; border: none; padding: 12px; cursor: pointer; color: #a8e6ff; font-size: 1rem; border-radius: 6px 6px 0 0; transition: all 0.3s; }
+        .tab-button.active { background: rgba(76, 175, 80, 0.2); color: #fff; border-bottom: 3px solid #4CAF50; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .panel-top-buttons { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; }
+        .panel-top-buttons button { width: 30px; height: 30px; padding: 0; background: rgba(74, 175, 80, 0.3); border-radius: 50%; }
+        .custom-marker.draggable { cursor: grab; }
+        .custom-marker.draggable:active { cursor: grabbing; }
+        .drag-hint { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: #fff; padding: 10px 20px; border-radius: 30px; z-index: 1000; font-size: 0.9rem; box-shadow: 0 4px 15px rgba(0,0,0,0.4); border: 1px solid rgba(74, 175, 80, 0.3); }
     </style>
 </head>
 <body>
     <div id="devtools-overlay">
         <h1><i class="fas fa-lock"></i> 访问受限</h1>
         <p>为保护系统安全，开发者工具访问已被阻止。如需访问系统功能，请关闭开发者工具并刷新页面。</p>
-        <button onclick="location.reload()"><i class="fas fa-sync-alt"></i> 刷新页面</button>
     </div>
-    
-    <div class="company-header">
+
+    <header class="company-header">
         <div class="header-left">
             <i class="fas fa-industry header-icon"></i>
             <div>
-                <h1 class="company-title">矿业有限责任公司</h1>
-                <div class="company-subtitle">环境监测系统 - 云端数据存储</div>
+                <h1 class="company-title">贺州市金琪矿业有限责任公司</h1>
+                <p class="company-subtitle">环境监测系统</p>
             </div>
         </div>
-        
         <div class="header-right">
             <div class="map-switcher">
                 <button class="map-switch-btn active" id="map233-btn">图A</button>
@@ -805,9 +121,9 @@
                 <i class="fas fa-user-lock"></i>
             </button>
         </div>
-    </div>
-    
-    <div id="app">
+    </header>
+
+    <main id="app">
         <div class="map-container-wrapper">
             <div id="map-container">
                 <div id="map" class="map-center-container">
@@ -816,1256 +132,947 @@
                 <div class="location-hint" id="location-select-hint">
                     <i class="fas fa-crosshairs"></i> 请点击地图选择点位位置
                 </div>
+                <div class="drag-hint" id="drag-hint" style="display: none;">
+                    <i class="fas fa-arrows-alt"></i> 管理员模式下可以拖动点位调整位置
+                </div>
             </div>
         </div>
-        
-        <div class="data-sidebar empty" id="data-sidebar">
+
+        <aside class="data-sidebar empty" id="data-sidebar">
             <i class="fas fa-map-marker-alt" style="font-size: 3rem; color: rgba(74, 175, 80, 0.5); margin-bottom: 20px;"></i>
             <p>点击地图上的点位查看详细信息</p>
-        </div>
-        
-        <div class="control-panel" id="control-panel">
+        </aside>
+
+        <aside class="control-panel" id="control-panel">
             <div class="panel-top-buttons">
                 <button class="export-btn" title="导出Excel"><i class="fas fa-file-export"></i></button>
                 <button class="collapse-btn" title="收缩面板"><i class="fas fa-chevron-left"></i></button>
             </div>
-            
             <div class="panel-content">
                 <div class="tab-container">
                     <div class="tab-buttons">
-                        <button class="tab-button active" id="add-tab-button">添加点位</button>
+                        <button class="tab-button active" id="add-tab-button">添加/编辑记录</button>
                         <button class="tab-button" id="manage-tab-button">管理点位</button>
                     </div>
-                    
                     <div id="add-tab" class="tab-content active">
-                        <h2 class="panel-title">添加监测数据</h2>
-                        
+                        <h2 class="panel-title">添加/编辑监测数据</h2>
                         <div class="form-group">
-                            <label for="point-code">点位编号</label>
-                            <input type="text" id="point-code" placeholder="例如: W1, W2" disabled>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="point-type">点位类型</label>
-                            <select id="point-type" disabled>
-                                <option value="monitor">水质监测点</option>
+                            <label for="select-point-dropdown">选择点位</label>
+                            <select id="select-point-dropdown" disabled>
+                                <option value="new-point">--- 新建点位 ---</option>
                             </select>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="water-type">水体类型</label>
-                            <select id="water-type" disabled>
-                                <option value="surface">地表水</option>
-                                <option value="ground">地下水</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="point-name">点位名称</label>
-                            <input type="text" id="point-name" placeholder="例如: 1# xxxx" disabled>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="point-zinc">锌监测值(mg/L)</label>
-                            <input type="number" id="point-zinc" step="0.1" placeholder="输入锌监测值" disabled>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="point-manganese">锰监测值(mg/L)</label>
-                            <input type="text" id="point-manganese" placeholder="输入锰监测值 (可输入 <0.01)" disabled>
-                            <span class="value-info">可输入数字或"<0.01"格式</span>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="record-date">记录日期</label>
-                            <input type="date" id="record-date" disabled>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for "point-notes">现场情况记录</label>
-                            <textarea id="point-notes" placeholder="记录现场情况..." disabled></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <button id="start-select-location-btn" class="action-btn btn-warning" style="width: 100%; display: none;">
-                                <i class="fas fa-map-marker-alt"></i> 选择地图点位位置
-                            </button>
-                        </div>
-
+                        <div class="form-group"><label for="point-code">点位编号</label><input type="text" id="point-code" placeholder="例如: W1, W2" disabled></div>
+                        <div class="form-group"><label for="point-name">点位名称</label><input type="text" id="point-name" placeholder="例如: 1# xxxx" disabled></div>
+                        <div class="form-group"><label for="water-type">水体类型</label><select id="water-type" disabled><option value="surface">地表水</option><option value="ground">地下水</option></select></div>
+                        <div class="form-group"><label for="point-zinc">锌监测值(mg/L)</label><input type="number" id="point-zinc" step="0.1" placeholder="输入锌监测值" disabled></div>
+                        <div class="form-group"><label for="point-manganese">锰监测值(mg/L)</label><input type="text" id="point-manganese" placeholder="输入锰监测值 (可输入 &lt;0.01)" disabled><span class="value-info">可输入数字或"&lt;0.01"格式</span></div>
+                        <div class="form-group"><label for="point-notes">现场情况记录</label><textarea id="point-notes" placeholder="记录现场情况..." disabled></textarea></div>
+                        <div class="form-group"><button id="start-select-location-btn" class="action-btn btn-warning" style="width: 100%; display: none;"><i class="fas fa-map-marker-alt"></i> 选择地图点位位置</button></div>
                         <button id="save-btn" disabled>保存监测数据</button>
                     </div>
-                    
                     <div id="manage-tab" class="tab-content">
                         <h2 class="panel-title">点位管理</h2>
-                        <div class="point-list">
-                            <div id="points-container"></div>
-                        </div>
+                        <div id="points-container" class="point-list"></div>
                     </div>
                 </div>
-                
                 <div class="github-config-section">
-                    <div class="github-config-title">
-                        <i class="fab fa-github"></i> GitHub云端存储配置
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="github-owner">仓库拥有者</label>
-                        <input type="text" id="github-owner" class="github-config-input" placeholder="输入GitHub用户名">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="github-repo">仓库名称</label>
-                        <input type="text" id="github-repo" class="github-config-input" placeholder="输入仓库名称">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="github-file">数据文件名</label>
-                        <input type="text" id="github-file" class="github-config-input" placeholder="例如: monitoring_data.json" value="monitoring_data.json">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="github-token">GitHub个人访问令牌</label>
-                        <input type="password" id="github-token" class="github-config-input" placeholder="输入GitHub访问令牌">
-                        <span class="value-info">需要repo权限（仅管理员使用）</span>
-                    </div>
-                    
-                    <button class="cloud-sync-btn">
-                        <i class="fas fa-cloud-upload-alt"></i> 保存数据到云端
-                    </button>
-                    
-                    <button class="cloud-sync-btn" style="margin-top: 10px; background: linear-gradient(135deg, #1abc9c, #16a085);">
-                        <i class="fas fa-cloud-download-alt"></i> 从云端加载数据
-                    </button>
-                    
+                    <h3 class="github-config-title"><i class="fab fa-github"></i> GitHub云端存储配置</h3>
+                    <div class="form-group"><label for="github-owner">仓库拥有者</label><input type="text" id="github-owner" placeholder="输入GitHub用户名"></div>
+                    <div class="form-group"><label for="github-repo">仓库名称</label><input type="text" id="github-repo" placeholder="输入仓库名称"></div>
+                    <div class="form-group"><label for="github-file">数据文件名</label><input type="text" id="github-file" value="data.json" placeholder="例如: data.json"></div>
+                    <div class="form-group"><label for="github-token">GitHub个人访问令牌</label><input type="password" id="github-token" placeholder="输入GitHub访问令牌"><span class="value-info">需要repo权限（仅管理员使用）</span></div>
+                    <button class="cloud-sync-btn" id="save-to-cloud-btn"><i class="fas fa-cloud-upload-alt"></i> 保存数据到云端</button>
+                    <button class="cloud-sync-btn" id="load-from-cloud-btn" style="margin-top: 10px; background: linear-gradient(135deg, #1abc9c, #16a085);"><i class="fas fa-cloud-download-alt"></i> 从云端加载数据</button>
                     <div id="sync-status" class="sync-status"></div>
                     <div id="last-sync" class="last-sync"></div>
                 </div>
             </div>
-        </div>
-    </div>
+        </aside>
+    </main>
 
     <div class="admin-panel-overlay" id="admin-panel-overlay">
         <div class="admin-panel-content">
             <div class="admin-panel-header">
-                <h2 class="admin-panel-title">
-                    <i class="fas fa-lock"></i> 管理员登录
-                </h2>
-                <button class="admin-close-btn" id="admin-panel-close-btn">
-                    <i class="fas fa-times"></i>
-                </button>
+                <h2 class="admin-panel-title"><i class="fas fa-lock"></i> 管理员登录</h2>
+                <button class="close-btn" id="admin-panel-close-btn">&times;</button>
             </div>
-            
-            <div class="admin-form-section" id="login-section">
-                <h3 class="admin-section-title">
-                    <i class="fas fa-key"></i> 身份验证
-                </h3>
-                
-                <div class="admin-form-group">
-                    <label class="admin-form-label" for="admin-password">管理密码</label>
-                    <input type="password" class="admin-form-input" id="admin-password" 
-                           placeholder="请输入管理密码">
-                </div>
-                
-                <div class="admin-form-group">
-                    <label class="admin-form-label" for="admin-operator-name">录入员姓名</label>
-                    <input type="text" class="admin-form-input" id="admin-operator-name" 
-                           placeholder="请输入您的姓名">
-                </div>
-                
-                <button class="general-btn primary-btn" id="admin-login-confirm">
-                    <i class="fas fa-sign-in-alt"></i> 登录验证
-                </button>
-            </div>
+            <div class="form-group"><label for="admin-password">管理密码</label><input type="password" id="admin-password" placeholder="请输入管理密码"></div>
+            <div class="form-group"><label for="admin-operator-name">录入员姓名</label><input type="text" id="admin-operator-name" placeholder="请输入您的姓名"></div>
+            <button id="admin-login-confirm" class="btn-primary"><i class="fas fa-sign-in-alt"></i> 登录验证</button>
         </div>
     </div>
 
     <div class="toast-message" id="toast-message"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // ==== 防止F12查看代码功能 ====
-        const devtoolsOverlay = document.getElementById('devtools-overlay');
-        
-        function detectDevTools() {
-            const threshold = 160;
-            const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-            const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-            
-            if (widthThreshold || heightThreshold) {
-                devtoolsOverlay.style.display = 'flex';
-                return true;
-            }
-            return false;
-        }
-        
-        window.addEventListener('resize', detectDevTools);
-        
-        document.addEventListener('keydown', function(e) {
-            const blockedKeys = {
-                'F12': true,
-                'I': e.ctrlKey && e.shiftKey,
-                'J': e.ctrlKey && e.shiftKey,
-                'C': e.ctrlKey && e.shiftKey,
-                'u': e.ctrlKey
-            };
-            
-            if (blockedKeys[e.key]) {
-                e.preventDefault();
-                devtoolsOverlay.style.display = 'flex';
-            }
-        });
-        
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        
-        // ==== 环境监测系统核心功能 ====
-        let map = null;
-        let currentMapId = '233';
-        let allMapsPointsData = { '233': [], '666': [] };
-        let currentMarker = null;
-        let selectedPointId = null;
-        let editingRecordId = null;
-        let currentMarkerLocation = null;
-        
-        const ADMIN_PASSWORD = 'kkhhjjj';
-        let isLoggedIn = false;
-        let operatorName = '';
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const ADMIN_PASSWORD = 'kkhhjjj'; 
+
+        const appState = {
+            isLoggedIn: false,
+            operatorName: '',
+            currentMapId: '233',
+            allMapsPointsData: { '233': [], '666': [] },
+            currentMarker: null, // 临时标记DOM元素 (用于选择位置时预览)
+            currentMarkerLocation: null, // {lat, lng} - 临时标记的逻辑坐标
+            selectedPointId: null, // 正在查看或操作的点位ID
+            editingRecordId: null, // 正在编辑的记录ID (null表示添加新记录)
+            isDragging: false, // 是否正在拖动点位
+            dragOffsetX: 0, // 拖动时鼠标相对于标记左上角的偏移
+            dragOffsetY: 0, // 拖动时鼠标相对于标记左上角的偏移
+            dragElement: null, // 当前被拖动的DOM元素
+            dragPointId: null, // 当前被拖动的点位ID
+            isSelectingLocation: false, // 是否处于选择点位位置模式
+        };
 
         const mapConfigurations = {
-            '233': { imageUrl: '233.jpg', width: 1776, height: 907 },
-            '666': { imageUrl: '666.jpg', width: 1920, height: 1279 }
+            '233': { imageUrl: '233.jpg', intrinsicWidth: 1776, intrinsicHeight: 907 }, // 原始图片尺寸
+            '666': { imageUrl: '666.jpg', intrinsicWidth: 1920, intrinsicHeight: 1279 } // 原始图片尺寸
         };
 
         const pointIcons = {
-            surface: {
-                className: 'custom-marker marker-surface',
-                html: '<div class="marker-pin" style="background:#4CAF50"><i class="fas fa-water"></i></div><div class="marker-label"></div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 30]
-            },
-            ground: {
-                className: 'custom-marker marker-ground',
-                html: '<div class="marker-pin" style="background:#1abc9c"><i class="fas fa-tint"></i></div><div class="marker-label"></div>',
-                iconSize: [30, 30],
-                iconAnchor: [15, 30]
-            }
+            surface: { className: 'custom-marker', html: '<div class="marker-pin" style="background:#4CAF50"><i class="fas fa-water"></i></div><div class="marker-label"></div>', iconAnchor: [16, 32] }, // 锚点相对于markerElement左上角
+            ground: { className: 'custom-marker', html: '<div class="marker-pin" style="background:#1abc9c"><i class="fas fa-tint"></i></div><div class="marker-label"></div>', iconAnchor: [16, 32] }
         };
 
-        // DOM元素缓存
         const elements = {
             app: document.getElementById('app'),
-            adminToggleBtn: document.getElementById('admin-toggle-btn'),
-            adminPanelOverlay: document.getElementById('admin-panel-overlay'),
-            adminPanelCloseBtn: document.getElementById('admin-panel-close-btn'),
-            adminPasswordInput: document.getElementById('admin-password'),
-            adminOperatorNameInput: document.getElementById('admin-operator-name'),
-            adminLoginConfirmBtn: document.getElementById('admin-login-confirm'),
+            mapContainer: document.getElementById('map-container'),
+            mapImage: document.getElementById('map-image'),
+            dataSidebar: document.getElementById('data-sidebar'),
+            controlPanel: document.getElementById('control-panel'),
+            pointsContainer: document.getElementById('points-container'),
             toastMessage: document.getElementById('toast-message'),
             locationSelectHint: document.getElementById('location-select-hint'),
-            startSelectLocationBtn: document.getElementById('start-select-location-btn'),
-            controlPanel: document.getElementById('control-panel'),
+            dragHint: document.getElementById('drag-hint'),
             map233Btn: document.getElementById('map233-btn'),
             map666Btn: document.getElementById('map666-btn'),
-            syncStatus: document.getElementById('sync-status'),
-            lastSync: document.getElementById('last-sync'),
+            adminToggleBtn: document.getElementById('admin-toggle-btn'),
+            adminLoginConfirmBtn: document.getElementById('admin-login-confirm'),
+            startSelectLocationBtn: document.getElementById('start-select-location-btn'),
+            saveBtn: document.getElementById('save-btn'),
+            selectPointDropdown: document.getElementById('select-point-dropdown'), // 新增点位选择下拉菜单
             pointCode: document.getElementById('point-code'),
             pointName: document.getElementById('point-name'),
             waterType: document.getElementById('water-type'),
             pointZinc: document.getElementById('point-zinc'),
             pointManganese: document.getElementById('point-manganese'),
-            recordDate: document.getElementById('record-date'),
             pointNotes: document.getElementById('point-notes'),
-            saveBtn: document.getElementById('save-btn'),
-            pointsContainer: document.getElementById('points-container'),
-            githubOwner: document.getElementById('github-owner'),
-            githubRepo: document.getElementById('github-repo'),
-            githubFile: document.getElementById('github-file'),
-            githubToken: document.getElementById('github-token'),
-            dataSidebar: document.getElementById('data-sidebar'),
+            adminPanelOverlay: document.getElementById('admin-panel-overlay'),
+            adminPanelCloseBtn: document.getElementById('admin-panel-close-btn'),
+            adminPasswordInput: document.getElementById('admin-password'),
+            adminOperatorNameInput: document.getElementById('admin-operator-name'),
             addTabButton: document.getElementById('add-tab-button'),
             manageTabButton: document.getElementById('manage-tab-button'),
             addTab: document.getElementById('add-tab'),
             manageTab: document.getElementById('manage-tab'),
-            mapImage: document.getElementById('map-image')
+            saveToCloudBtn: document.getElementById('save-to-cloud-btn'),
+            loadFromCloudBtn: document.getElementById('load-from-cloud-btn'),
+            syncStatus: document.getElementById('sync-status'),
+            lastSync: document.getElementById('last-sync'),
+            githubOwner: document.getElementById('github-owner'),
+            githubRepo: document.getElementById('github-repo'),
+            githubFile: document.getElementById('github-file'),
+            githubToken: document.getElementById('github-token'),
+            devtoolsOverlay: document.getElementById('devtools-overlay'),
         };
 
-        // 获取当前日期（格式：YYYY-MM-DD）
-        function getCurrentDate() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+        const showToast = (message, type = 'info') => {
+            elements.toastMessage.textContent = message;
+            elements.toastMessage.className = `toast-message show ${type}`;
+            setTimeout(() => elements.toastMessage.classList.remove('show'), 3000);
+        };
+
+        const updateSyncStatus = (message, type) => {
+            elements.syncStatus.textContent = message;
+            elements.syncStatus.className = `sync-status ${type}`;
+            elements.syncStatus.style.display = 'block';
+            setTimeout(() => { elements.syncStatus.style.display = 'none'; }, 5000);
+        };
+
+        const updateLastSyncTime = () => {
+            elements.lastSync.textContent = `最后同步: ${new Date().toLocaleString()}`;
+            elements.lastSync.style.display = 'block';
+        };
+
+        const parseManganeseInput = (inputValue) => {
+            if (!inputValue || inputValue.trim() === '') return null;
+            const trimmedValue = inputValue.trim();
+            if (trimmedValue.startsWith('<')) return -0.01; // 用负数表示 "<0.01"
+            const num = parseFloat(trimmedValue);
+            return isNaN(num) ? 'invalid' : num;
+        };
+
+        const formatManganeseForDisplay = (value) => {
+            if (value === null || value === undefined) return '未记录';
+            if (value === -0.01) return `<span style="color:#FF9800; font-weight: bold;">&lt;0.01</span>`;
+            return value;
+        };
+
+        const createHistoryEntry = (action, note) => ({
+            id: Date.now(),
+            action,
+            note,
+            timestamp: new Date().toLocaleString(),
+            operator: appState.operatorName,
+        });
+
+        const getWaterTypeName = (waterType) => {
+            const names = { surface: '地表水', ground: '地下水' };
+            return names[waterType] || waterType;
+        };
+
+        const base64EncodeUnicode = (str) => btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
+        const base64DecodeUnicode = (str) => decodeURIComponent(Array.prototype.map.call(atob(str), (c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+
+        // 获取图片在容器中的实际显示尺寸和偏移量，用于准确计算点位位置
+        function getMapImageActualDimensions() {
+            const img = elements.mapImage;
+            const container = elements.mapContainer;
+            const intrinsicWidth = img.naturalWidth;
+            const intrinsicHeight = img.naturalHeight;
+            const containerRect = container.getBoundingClientRect();
+            const containerWidth = containerRect.width;
+            const containerHeight = containerRect.height;
+
+            let displayedWidth, displayedHeight, offsetX, offsetY;
+            const containerRatio = containerWidth / containerHeight;
+            const imageRatio = intrinsicWidth / intrinsicHeight;
+
+            if (containerRatio > imageRatio) {
+                displayedHeight = containerHeight;
+                displayedWidth = intrinsicWidth * (displayedHeight / intrinsicHeight);
+                offsetX = (containerWidth - displayedWidth) / 2;
+                offsetY = 0;
+            } else {
+                displayedWidth = containerWidth;
+                displayedHeight = intrinsicHeight * (displayedWidth / intrinsicHeight);
+                offsetX = 0;
+                offsetY = (containerHeight - displayedHeight) / 2;
+            }
+            return { displayedWidth, displayedHeight, offsetX, offsetY };
         }
 
         function initMap() {
-            // 移除Leaflet地图初始化，改为直接显示图片
-            const config = mapConfigurations[currentMapId];
-            elements.mapImage.src = config.imageUrl;
-            
-            // 重新渲染标记点
-            renderMarkers();
-            
-            // 设置默认日期为今天
-            elements.recordDate.value = getCurrentDate();
+            elements.mapImage.src = mapConfigurations[appState.currentMapId].imageUrl;
+            elements.mapImage.onload = renderMarkers;
+            if (elements.mapImage.complete) renderMarkers();
         }
-        
+
         function switchMap(mapId) {
-            if (currentMapId === mapId) return;
-
-            currentMapId = mapId;
-            elements.map233Btn.classList.remove('active');
-            elements.map666Btn.classList.remove('active');
-            document.getElementById(`map${mapId}-btn`).classList.add('active');
-
+            if (appState.currentMapId === mapId) return;
+            appState.currentMapId = mapId;
+            elements.map233Btn.classList.toggle('active', mapId === '233');
+            elements.map666Btn.classList.toggle('active', mapId === '666');
             initMap();
             closeDataPanel();
             resetAddPointForm();
             refreshPointList();
+            populatePointDropdown(); // 切换地图后刷新下拉菜单
             showToast(`已切换至图 ${mapId === '233' ? 'A' : 'B'}`, 'info');
-        };
+        }
 
         function renderMarkers() {
-            // 清除现有标记
-            document.querySelectorAll('.custom-marker').forEach(marker => marker.remove());
-            
-            const points = allMapsPointsData[currentMapId] || [];
-            points.forEach(point => createMarker(point));
+            document.querySelectorAll('.custom-marker:not(.marker-temp)').forEach(marker => marker.remove());
+            (appState.allMapsPointsData[appState.currentMapId] || []).forEach(point => createMarker(point));
+            elements.dragHint.style.display = appState.isLoggedIn ? 'block' : 'none';
         }
 
         function createMarker(pointData, isTemp = false) {
-            const waterType = pointData.waterType || 'surface';
-            const iconConfig = pointIcons[waterType];
-            
-            // 创建自定义标记
-            const markerElement = document.createElement('div');
+            const iconConfig = pointIcons[pointData.waterType || 'surface'];
+            let markerElement = document.createElement('div');
             markerElement.className = `${iconConfig.className} ${isTemp ? 'marker-temp' : ''}`;
             markerElement.innerHTML = iconConfig.html;
-            markerElement.dataset.pointId = pointData.id; // 存储点位ID以便后续使用
+            markerElement.dataset.pointId = pointData.id;
+            markerElement.dataset.waterType = pointData.waterType; 
+
+            const { displayedWidth, displayedHeight, offsetX, offsetY } = getMapImageActualDimensions();
+            const mapConfig = mapConfigurations[appState.currentMapId];
+
+            const xPos = offsetX + (pointData.lng / mapConfig.intrinsicWidth) * displayedWidth;
+            const yPos = offsetY + (pointData.lat / mapConfig.intrinsicHeight) * displayedHeight;
             
-            // 设置标记位置
-            const mapContainer = document.getElementById('map-container');
-            const mapImage = document.getElementById('map-image');
-            
-            // 计算相对于图片的位置
-            const imgRect = mapImage.getBoundingClientRect();
-            const containerRect = mapContainer.getBoundingClientRect();
-            
-            // 计算图片在容器中的偏移量
-            const offsetX = (containerRect.width - imgRect.width) / 2;
-            const offsetY = (containerRect.height - imgRect.height) / 2;
-            
-            // 计算标记位置（基于图片坐标）
-            const xPos = offsetX + (pointData.lng / mapConfigurations[currentMapId].width) * imgRect.width;
-            const yPos = offsetY + (pointData.lat / mapConfigurations[currentMapId].height) * imgRect.height;
-            
-            // 设置标记位置
             markerElement.style.position = 'absolute';
             markerElement.style.left = `${xPos - iconConfig.iconAnchor[0]}px`;
             markerElement.style.top = `${yPos - iconConfig.iconAnchor[1]}px`;
-            markerElement.style.zIndex = '1000';
+            markerElement.querySelector('.marker-label').textContent = pointData.code || pointData.name || '';
             
-            // 设置标签文本
-            const labelElement = markerElement.querySelector('.marker-label');
-            if (labelElement) labelElement.textContent = pointData.code || pointData.name || '';
-            
-            // 添加到地图容器
-            mapContainer.appendChild(markerElement);
-            
-            // 添加点击事件 - 修复游客模式点击无响应问题
-            markerElement.addEventListener('click', function(e) {
-                e.stopPropagation(); // 防止事件冒泡到地图容器
-                document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('highlight'));
-                this.classList.add('highlight');
-                
-                // 确保点位的ID是数字类型
-                const pointId = parseInt(this.dataset.pointId);
-                showPointData(pointId);
-            });
-            
+            elements.mapContainer.appendChild(markerElement);
+
+            if (!isTemp) {
+                markerElement.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showPointData(pointData.id);
+                });
+                if (appState.isLoggedIn) enableMarkerDragging(markerElement, pointData.id);
+            }
             return markerElement;
         }
 
-        function handleMapClickForLocationSelection(e) {
-            closeDataPanel();
+        function enableMarkerDragging(markerElement, pointId) {
+            markerElement.removeEventListener('mousedown', handleMarkerMouseDown); // 避免重复绑定
+            markerElement.classList.add('draggable');
+            markerElement.addEventListener('mousedown', handleMarkerMouseDown);
 
-            if (isLoggedIn && elements.addTab.classList.contains('active') && 
-                elements.locationSelectHint.style.display === 'block') {
-                
-                if (currentMarker) currentMarker.remove();
-                
-                // 计算点击位置相对于图片的坐标
-                const mapContainer = document.getElementById('map-container');
-                const mapImage = document.getElementById('map-image');
-                
-                const imgRect = mapImage.getBoundingClientRect();
-                const containerRect = mapContainer.getBoundingClientRect();
-                
-                // 计算图片在容器中的偏移量
-                const offsetX = (containerRect.width - imgRect.width) / 2;
-                const offsetY = (containerRect.height - imgRect.height) / 2;
-                
-                // 计算相对于图片的坐标
-                const clickX = e.clientX - containerRect.left - offsetX;
-                const clickY = e.clientY - containerRect.top - offsetY;
-                
-                // 转换为图片坐标系统 (0-1)
-                const lat = clickY / imgRect.height;
-                const lng = clickX / imgRect.width;
-                
-                // 转换为实际坐标
-                const actualLat = lat * mapConfigurations[currentMapId].height;
-                const actualLng = lng * mapConfigurations[currentMapId].width;
-                
-                const waterType = elements.waterType.value;
-                const tempPointData = {
-                    lat: actualLat,
-                    lng: actualLng,
-                    waterType: waterType,
-                    code: '临时',
-                    name: '临时点位'
-                };
-                
-                currentMarker = createMarker(tempPointData, true);
-                currentMarkerLocation = { lat: actualLat, lng: actualLng };
-                showToast('已选择地图位置。', 'info');
-                elements.locationSelectHint.style.display = 'none';
-                document.getElementById('map-container').style.cursor = '';
+            function handleMarkerMouseDown(e) {
+                if (!appState.isLoggedIn) return;
+                e.stopPropagation();
+                appState.isDragging = true;
+                appState.dragElement = markerElement;
+                appState.dragPointId = pointId;
+                const markerRect = markerElement.getBoundingClientRect();
+                appState.dragOffsetX = e.clientX - markerRect.left;
+                appState.dragOffsetY = e.clientY - markerRect.top;
+                markerElement.style.zIndex = '10000';
+                markerElement.style.opacity = '0.8';
             }
         }
 
-        function loadAllPointsData() {
-            const storedData = localStorage.getItem('allMapsPointsData');
-            if (storedData) {
-                try {
-                    allMapsPointsData = JSON.parse(storedData);
-                } catch {
-                    allMapsPointsData = { '233': [], '666': [] };
-                }
-            } else {
-                const oldPointsData = localStorage.getItem('monitoringPoints');
-                if (oldPointsData) {
-                    try {
-                        const parsedOldData = JSON.parse(oldPointsData);
-                        if (Array.isArray(parsedOldData)) {
-                            allMapsPointsData['233'] = parsedOldData;
-                            localStorage.removeItem('monitoringPoints');
-                        }
-                    } catch {}
-                }
-            }
+        function handleMapMouseMove(e) {
+            if (!appState.isDragging || !appState.dragElement) return;
+            e.preventDefault();
+            const containerRect = elements.mapContainer.getBoundingClientRect();
+            let newLeft = e.clientX - containerRect.left - appState.dragOffsetX;
+            let newTop = e.clientY - containerRect.top - appState.dragOffsetY;
+            newLeft = Math.max(0, Math.min(newLeft, containerRect.width - appState.dragElement.offsetWidth));
+            newTop = Math.max(0, Math.min(newTop, containerRect.height - appState.dragElement.offsetHeight));
+            appState.dragElement.style.left = `${newLeft}px`;
+            appState.dragElement.style.top = `${newTop}px`;
         }
 
-        function saveAllPointsData() {
-            localStorage.setItem('allMapsPointsData', JSON.stringify(allMapsPointsData));
-        }
-        
-        function showPointData(pointId) {
-            const points = allMapsPointsData[currentMapId] || [];
-            const point = points.find(p => p.id === pointId);
-            if (!point) return;
+        function handleMapMouseUp() {
+            if (!appState.isDragging || !appState.dragElement) return;
+            appState.isDragging = false;
+            appState.dragElement.style.zIndex = '500';
+            appState.dragElement.style.opacity = '1';
             
-            let sidebarContent = `
+            const { displayedWidth, displayedHeight, offsetX, offsetY } = getMapImageActualDimensions();
+            const mapConfig = mapConfigurations[appState.currentMapId];
+            const markerWaterType = appState.dragElement.dataset.waterType || 'surface';
+            const iconConfig = pointIcons[markerWaterType];
+
+            const markerRect = appState.dragElement.getBoundingClientRect();
+            const containerRect = elements.mapContainer.getBoundingClientRect();
+
+            const markerXInContainer = (markerRect.left - containerRect.left) + iconConfig.iconAnchor[0];
+            const markerYInContainer = (markerRect.top - containerRect.top) + iconConfig.iconAnchor[1];
+
+            const markerXInImage = markerXInContainer - offsetX;
+            const markerYInImage = markerYInContainer - offsetY;
+            
+            const newLng = (markerXInImage / displayedWidth) * mapConfig.intrinsicWidth;
+            const newLat = (markerYInImage / displayedHeight) * mapConfig.intrinsicHeight;
+            
+            const points = appState.allMapsPointsData[appState.currentMapId];
+            const pointIndex = points.findIndex(p => p.id === appState.dragPointId);
+            
+            if (pointIndex !== -1) {
+                const point = points[pointIndex];
+                point.lat = newLat;
+                point.lng = newLng;
+                if (!point.history) point.history = [];
+                point.history.unshift(createHistoryEntry('更新点位位置', `点位坐标更新为 (${newLat.toFixed(2)}, ${newLng.toFixed(2)})`));
+                saveAllPointsData();
+                showToast(`点位 "${point.name}" 位置已更新！`, 'success');
+            }
+            appState.dragElement = null;
+            appState.dragPointId = null;
+        }
+
+        function showPointData(pointId) {
+            const point = (appState.allMapsPointsData[appState.currentMapId] || []).find(p => p.id === pointId);
+            if (!point) return;
+
+            appState.selectedPointId = pointId;
+            document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('highlight'));
+            document.querySelector(`.custom-marker[data-point-id="${pointId}"]`)?.classList.add('highlight');
+            
+            const recordsHistory = (point.records || []).slice().reverse().map(record => `
+                <tr data-record-id="${record.id}">
+                    <td>${record.timestamp}</td>
+                    <td>${record.zinc ?? '未记录'}</td>
+                    <td>${formatManganeseForDisplay(record.manganese)}</td>
+                    <td>${record.notes || '无'}</td>
+                    <td>${record.operator || '未知'}</td>
+                    <td class="admin-only-cell" style="${appState.isLoggedIn ? '' : 'display: none;'}">
+                        <button class="action-btn btn-warning edit-record-btn" data-record-id="${record.id}">编辑</button>
+                        <button class="action-btn btn-danger delete-record-btn" data-record-id="${record.id}">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            elements.dataSidebar.innerHTML = `
                 <div class="data-content">
                     <div class="data-header">
                         <h3>${point.name} (${point.code || '无编号'})</h3>
-                        <button class="close-btn">×</button>
+                        <button class="close-btn">&times;</button>
                     </div>
-                    
-                    <div class="point-info">
-                        <div style="margin-bottom: 15px;">
-                            <strong>点位类型:</strong> ${point.waterType === 'surface' ? '地表水监测点' : '地下水监测点'}<br>
-                            <strong>坐标位置:</strong> ${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}<br>
-                            <strong>创建时间:</strong> ${point.timestamp}<br>
-                            <strong>记录总数:</strong> ${point.records?.length || 0}
-                        </div>
-                    </div>
-                    
-                    <h4>最新记录</h4>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>日期</th>
-                                <th>锌监测值(mg/L)</th>
-                                <th>锰监测值(mg/L)</th>
-                                <th>备注</th>
-                                <th>录入员</th>
-                            </tr>
-                        </thead>
-                        <tbody id="latest-record"></tbody>
-                    </table>
-                    
+                    <p><strong>水体类型:</strong> ${getWaterTypeName(point.waterType || 'surface')} | <strong>记录数:</strong> ${point.records?.length || 0}</p>
                     <h4 style="margin-top: 20px;">记录历史</h4>
-                    <div style="max-height: 300px; overflow-y: auto;">
+                    <div style="max-height: 380px; overflow-y: auto;">
                         <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>日期</th>
-                                    <th>锌监测值</th>
-                                    <th>锰监测值</th>
-                                    <th>备注</th>
-                                    <th>录入员</th>
-                                    <th class="admin-only-cell">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="history-records"></tbody>
+                            <thead><tr><th>时间</th><th>锌</th><th>锰</th><th>备注</th><th>录入员</th><th class="admin-only-cell" style="${appState.isLoggedIn ? '' : 'display: none;'}">操作</th></tr></thead>
+                            <tbody>${recordsHistory || `<tr><td colspan="6" style="text-align:center;">暂无历史记录</td></tr>`}</tbody>
                         </table>
                     </div>
-                    
-                    <div class="edit-form" id="edit-form" style="display: none;">
-                        <h4>编辑记录</h4>
-                        <div class="form-group">
-                            <label for="edit-zinc">锌监测值(mg/L)</label>
-                            <input type="number" id="edit-zinc" step="0.1" placeholder="输入锌监测值">
-                        </div>
-                        <div class="form-group">
-                            <label for="edit-manganese">锰监测值(mg/L)</label>
-                            <input type="text" id="edit-manganese" placeholder="输入锰监测值 (可输入 <0.01)">
-                            <span class="value-info">可输入数字或"<0.01"格式</span>
-                        </div>
-                        <div class="form-group">
-                            <label for="edit-date">记录日期</label>
-                            <input type="date" id="edit-date">
-                        </div>
-                        <div class="form-group">
-                            <label for="edit-notes">备注</label>
-                            <textarea id="edit-notes" placeholder="输入备注..."></textarea>
-                        </div>
-                        <button class="action-btn btn-primary">保存修改</button>
-                        <button class="action-btn btn-danger">取消</button>
-                    </div>
-                </div>
-            `;
-            
-            elements.dataSidebar.innerHTML = sidebarContent;
+                </div>`;
             elements.dataSidebar.classList.remove('empty');
-            
-            const latestRecord = point.records?.length > 0 ? point.records[point.records.length - 1] : null;
-            
-            let latestHtml = '<tr><td colspan="5" style="text-align:center;">暂无监测记录</td></tr>';
-            if (latestRecord) {
-                let manganeseDisplay = latestRecord.manganese;
-                if (typeof manganeseDisplay === 'string' && manganeseDisplay.startsWith('<')) {
-                    manganeseDisplay = `<span style="color:#FF9800">${manganeseDisplay}</span>`;
-                } else if (latestRecord.manganese === -0.01) {
-                    manganeseDisplay = '<span style="color:#FF9800">&lt;0.01</span>';
-                }
-                
-                latestHtml = `
-                    <tr>
-                        <td>${latestRecord.date || latestRecord.timestamp}</td>
-                        <td>${latestRecord.zinc ?? '未记录'}</td>
-                        <td>${manganeseDisplay}</td>
-                        <td>${latestRecord.notes || '无'}</td>
-                        <td>${latestRecord.operator || '未知'}</td>
-                    </tr>
-                `;
-            }
-            document.getElementById('latest-record').innerHTML = latestHtml;
-            
-            let historyHtml = '';
-            if (point.records?.length > 0) {
-                [...point.records].reverse().forEach(record => {
-                    let manganeseDisplay = record.manganese;
-                    if (typeof manganeseDisplay === 'string' && manganeseDisplay.startsWith('<')) {
-                        manganeseDisplay = `<span style="color:#FF9800">${manganeseDisplay}</span>`;
-                    } else if (record.manganese === -0.01) {
-                        manganeseDisplay = '<span style="color:#FF9800">&lt;0.01</span>';
-                    }
-                    
-                    historyHtml += `
-                        <tr data-record-id="${record.id}">
-                            <td>${record.date || record.timestamp}</td>
-                            <td>${record.zinc ?? '未记录'}</td>
-                            <td>${manganeseDisplay}</td>
-                            <td>${record.notes || '无'}</td>
-                            <td>${record.operator || '未知'}</td>
-                            <td class="admin-only-cell" style="${isLoggedIn ? '' : 'display: none;'}">
-                                <button class="edit-btn" ${isLoggedIn ? '' : 'disabled'}>编辑</button>
-                                <button class="delete-btn-sm" ${isLoggedIn ? '' : 'disabled'}>删除</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } else {
-                historyHtml = '<tr><td colspan="6" style="text-align:center;">暂无记录历史</td></tr>';
-            }
-            document.getElementById('history-records').innerHTML = historyHtml;
-            
-            document.querySelector('.close-btn').addEventListener('click', closeDataPanel);
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const recordId = parseInt(this.closest('tr').dataset.recordId);
-                    editRecord(pointId, recordId);
-                });
-            });
-            
-            document.querySelectorAll('.delete-btn-sm').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const recordId = parseInt(this.closest('tr').dataset.recordId);
-                    deleteRecord(pointId, recordId);
-                });
-            });
-            
-            document.querySelector('.btn-primary')?.addEventListener('click', saveEditedRecord);
-            document.querySelector('.btn-danger')?.addEventListener('click', cancelEdit);
-            
-            editingRecordId = null;
-            selectedPointId = pointId;
 
-            updateAdminOnlyElementsInPanel();
-        };
-        
+            if (appState.isLoggedIn) {
+                elements.dataSidebar.querySelectorAll('.edit-record-btn').forEach(btn => btn.addEventListener('click', (e) => editRecord(pointId, parseInt(e.target.dataset.recordId))));
+                elements.dataSidebar.querySelectorAll('.delete-record-btn').forEach(btn => btn.addEventListener('click', (e) => deleteRecord(pointId, parseInt(e.target.dataset.recordId))));
+            }
+        }
+
         function closeDataPanel() {
             elements.dataSidebar.innerHTML = `
                 <i class="fas fa-map-marker-alt" style="font-size: 3rem; color: rgba(74, 175, 80, 0.5); margin-bottom: 20px;"></i>
-                <p>点击地图上的点位查看详细信息</p>
-            `;
+                <p>点击地图上的点位查看详细信息</p>`;
             elements.dataSidebar.classList.add('empty');
-            editingRecordId = null;
-            selectedPointId = null;
+            appState.selectedPointId = null;
+            appState.editingRecordId = null;
             document.querySelectorAll('.custom-marker').forEach(marker => marker.classList.remove('highlight'));
-        };
-        
-        function editRecord(pointId, recordId) {
-            if (!isLoggedIn) {
-                showToast('请登录管理员账号才能编辑记录。', 'error');
-                return;
-            }
+            resetAddPointForm();
+        }
 
-            const points = allMapsPointsData[currentMapId] || [];
-            const point = points.find(p => p.id === pointId);
-            if (!point || !point.records) return;
-            
-            const record = point.records.find(r => r.id === recordId);
-            if (!record) return;
-            
-            document.getElementById('edit-form').style.display = 'block';
-            document.getElementById('edit-zinc').value = record.zinc || '';
-            document.getElementById('edit-manganese').value = record.manganese === -0.01 ? '<0.01' : record.manganese || '';
-            document.getElementById('edit-date').value = record.date || record.timestamp.split(' ')[0] || getCurrentDate();
-            document.getElementById('edit-notes').value = record.notes || '';
-            
-            editingRecordId = recordId;
-            selectedPointId = pointId;
-        };
-        
-        function saveEditedRecord() {
-            if (!isLoggedIn) {
-                showToast('请登录管理员账号才能保存修改。', 'error');
-                return;
-            }
-
-            if (!selectedPointId || !editingRecordId) return;
-            
-            const zincValue = document.getElementById('edit-zinc').value;
-            let manganeseValue = document.getElementById('edit-manganese').value;
-            const dateValue = document.getElementById('edit-date').value;
-            const notes = document.getElementById('edit-notes').value;
-
-            if (zincValue && isNaN(parseFloat(zincValue))) {
-                showToast('锌监测值必须是数字！', 'error');
-                return;
-            }
-            
-            let manganeseValueToSave = manganeseValue;
-            if (manganeseValue.startsWith('<')) {
-                const numPart = manganeseValue.replace(/</g, '').trim();
-                if (isNaN(parseFloat(numPart))) {
-                    showToast('锰监测值格式错误！请使用"<0.01"格式或数字。', 'error');
-                    return;
-                }
-                manganeseValueToSave = -0.01;
-            } else if (manganeseValue && isNaN(parseFloat(manganeseValue))) {
-                showToast('锰监测值必须是数字或"<0.01"格式！', 'error');
-                return;
-            } else {
-                manganeseValueToSave = parseFloat(manganeseValue);
-            }
-            
-            const points = allMapsPointsData[currentMapId];
-            const point = points.find(p => p.id === selectedPointId);
-            if (point && point.records) {
-                const recordIndex = point.records.findIndex(r => r.id === editingRecordId);
-                if (recordIndex !== -1) {
-                    point.records[recordIndex].zinc = zincValue ? parseFloat(zincValue) : null;
-                    point.records[recordIndex].manganese = manganeseValueToSave;
-                    point.records[recordIndex].date = dateValue;
-                    point.records[recordIndex].notes = notes;
-                    point.records[recordIndex].operator = operatorName;
-
-                    if (!point.history) point.history = [];
-                    
-                    let displayManganese = typeof manganeseValueToSave === 'number' && manganeseValueToSave < 0 ? 
-                        '<0.01' : manganeseValueToSave;
-                        
-                    point.history.unshift({
-                        id: Date.now(),
-                        action: '编辑记录',
-                        timestamp: new Date().toLocaleString(),
-                        operator: operatorName,
-                        note: `修改了记录 (锌: ${zincValue || '未记录'}, 锰: ${displayManganese || '未记录'})`
-                    });
-                    
-                    saveAllPointsData();
-                    showPointData(selectedPointId);
-                    document.getElementById('edit-form').style.display = 'none';
-                    editingRecordId = null;
-                    showToast('记录修改成功！', 'success');
-                }
-            }
-        };
-        
-        function cancelEdit() {
-            document.getElementById('edit-form').style.display = 'none';
-            editingRecordId = null;
-        };
-        
-        function deleteRecord(pointId, recordId) {
-            if (!isLoggedIn) {
-                showToast('请登录管理员账号才能删除记录。', 'error');
-                return;
-            }
-            if (confirm('确定要删除这条记录吗？')) {
-                const points = allMapsPointsData[currentMapId];
-                const point = points.find(p => p.id === pointId);
-                if (point && point.records) {
-                    point.records = point.records.filter(r => r.id !== recordId);
-                    
-                    if (!point.history) point.history = [];
-                    point.history.unshift({
-                        id: Date.now(),
-                        action: '删除记录',
-                        timestamp: new Date().toLocaleString(),
-                        operator: operatorName,
-                        note: '删除了监测记录'
-                    });
-                    
-                    saveAllPointsData();
-                    showPointData(pointId);
-                    showToast('记录删除成功！', 'success');
-                }
-            }
-        };
-        
         function savePointData() {
-            if (!isLoggedIn) {
-                showToast('请登录管理员账号才能保存监测数据。', 'error');
-                return;
-            }
+            if (!appState.isLoggedIn) return showToast('请登录管理员账号。', 'error');
 
             const pointCode = elements.pointCode.value.trim();
             const pointName = elements.pointName.value.trim();
             const waterType = elements.waterType.value;
-            const zincValue = elements.pointZinc.value;
-            let manganeseValue = elements.pointManganese.value;
-            const dateValue = elements.recordDate.value;
+            const zincValue = elements.pointZinc.value ? parseFloat(elements.pointZinc.value) : null;
+            const manganeseParsed = parseManganeseInput(elements.pointManganese.value);
             const notes = elements.pointNotes.value;
-            
-            if (!pointName || !pointCode) {
-                showToast('请输入点位名称和点位编号！', 'error');
-                return;
-            }
-            
-            if (zincValue && isNaN(parseFloat(zincValue))) {
-                showToast('锌监测值必须是数字！', 'error');
-                return;
-            }
-            
-            let manganeseValueToSave = manganeseValue;
-            if (manganeseValue.startsWith('<')) {
-                const numPart = manganeseValue.replace(/</g, '').trim();
-                if (isNaN(parseFloat(numPart))) {
-                    showToast('锰监测值格式错误！请使用"<0.01"格式或数字。', 'error');
-                    return;
-                }
-                manganeseValueToSave = -0.01;
-            } else if (manganeseValue && isNaN(parseFloat(manganeseValue))) {
-                showToast('锰监测值必须是数字或"<0.01"格式！', 'error');
-                return;
-            } else {
-                manganeseValueToSave = manganeseValue ? parseFloat(manganeseValue) : null;
-            }
 
-            let latlng;
-            const points = allMapsPointsData[currentMapId];
-            if (selectedPointId) {
-                const existingPoint = points.find(p => p.id === selectedPointId);
-                latlng = { lat: existingPoint.lat, lng: existingPoint.lng };
-            } else {
-                if (!currentMarkerLocation) {
-                    showToast('请先在地图上选择点位位置！', 'error');
-                    return;
-                }
-                latlng = currentMarkerLocation;
-            }
+            if (!pointName || !pointCode) return showToast('点位名称和编号不能为空！', 'error');
+            if (zincValue !== null && isNaN(zincValue)) return showToast('锌监测值必须是数字！', 'error');
+            if (manganeseParsed === 'invalid') return showToast('锰监测值格式错误！', 'error');
             
-            const recordData = {
-                id: Date.now(),
-                zinc: zincValue ? parseFloat(zincValue) : null,
-                manganese: manganeseValueToSave,
-                date: dateValue,
-                notes: notes,
-                timestamp: new Date().toLocaleString(),
-                operator: operatorName
-            };
+            const points = appState.allMapsPointsData[appState.currentMapId];
             
-            if (selectedPointId) {
-                const pointIndex = points.findIndex(p => p.id === selectedPointId);
-                if (pointIndex !== -1) {
-                    points[pointIndex].name = pointName;
-                    points[pointIndex].code = pointCode;
-                    points[pointIndex].waterType = waterType;
-
-                    if (zincValue || manganeseValue || notes) {
-                        if (!points[pointIndex].records) points[pointIndex].records = [];
-                        points[pointIndex].records.push(recordData);
-
-                        if (!points[pointIndex].history) points[pointIndex].history = [];
-                        
-                        let displayManganese = typeof manganeseValueToSave === 'number' && manganeseValueToSave < 0 ? 
-                            '<0.01' : manganeseValueToSave;
-                            
-                        points[pointIndex].history.unshift({
-                            id: Date.now(),
-                            action: '添加记录',
-                            timestamp: new Date().toLocaleString(),
-                            operator: operatorName,
-                            note: `添加了新的监测记录 (锌: ${zincValue || '未记录'}, 锰: ${displayManganese || '未记录'})`
-                        });
-                        points[pointIndex].timestamp = new Date().toLocaleString();
-                        showToast('监测记录已成功添加/更新！', 'success');
-                    } else {
-                        showToast('点位基本信息已更新！', 'success');
-                    }
-
-                    // 重新渲染标记点
-                    document.querySelectorAll('.custom-marker').forEach(marker => marker.remove());
-                    renderMarkers();
-                }
-            } else {
-                if (points.some(p => p.code === pointCode)) {
-                    showToast('当前地图下点位编号已存在，请使用其他编号。', 'error');
-                    return;
-                }
-
-                const pointData = {
-                    id: Date.now(),
-                    mapId: currentMapId,
-                    code: pointCode,
-                    name: pointName,
-                    type: 'monitor',
-                    waterType: waterType,
-                    lat: latlng.lat,
-                    lng: latlng.lng,
-                    timestamp: new Date().toLocaleString(),
-                    records: [recordData],
-                    history: [{
-                        id: Date.now(),
-                        action: '创建点位',
-                        timestamp: new Date().toLocaleString(),
-                        operator: operatorName,
-                        note: '新建监测点位'
-                    }]
-                };
+            if (appState.selectedPointId) { // 编辑现有记录或点位信息
+                const point = points.find(p => p.id === appState.selectedPointId);
+                if (!point) return;
                 
-                points.push(pointData);
-                selectedPointId = pointData.id;
-                createMarker(pointData);
-                showToast('新点位已成功添加！', 'success');
+                if (points.some(p => p.code === pointCode && p.id !== appState.selectedPointId)) {
+                    return showToast('点位编号已存在！', 'error');
+                }
+
+                // 更新点位基本信息
+                point.name = pointName;
+                point.code = pointCode;
+                point.waterType = waterType;
+
+                if (appState.editingRecordId) { // 编辑现有记录
+                    const recordIndex = point.records.findIndex(r => r.id === appState.editingRecordId);
+                    if (recordIndex !== -1) {
+                        point.records[recordIndex] = {
+                            ...point.records[recordIndex],
+                            zinc: zincValue, manganese: manganeseParsed, notes: notes, operator: appState.operatorName
+                        };
+                        point.history.unshift(createHistoryEntry('编辑记录', `编辑了记录 ID: ${appState.editingRecordId}`));
+                        showToast(`点位 "${point.name}" 的记录已更新！`, 'success');
+                    }
+                } else { // 为选定点位添加新记录
+                    if (zincValue !== null || manganeseParsed !== null || notes) {
+                        if (!point.records) point.records = [];
+                        point.records.push({ id: Date.now(), zinc: zincValue, manganese: manganeseParsed, notes: notes, timestamp: new Date().toLocaleString(), operator: appState.operatorName });
+                        point.history.unshift(createHistoryEntry('添加记录', `添加新监测记录`));
+                        showToast(`为点位 "${point.name}" 添加了新记录！`, 'success');
+                    } else {
+                        showToast('点位信息已更新，但未添加新的监测数据。', 'info');
+                    }
+                }
+            } else { // 创建新点位
+                if (!appState.currentMarkerLocation) return showToast('请先在地图上选择点位位置！', 'error');
+                if (points.some(p => p.code === pointCode)) return showToast('点位编号已存在！', 'error');
+
+                const newPoint = {
+                    id: Date.now(), mapId: appState.currentMapId, code: pointCode, name: pointName, waterType: waterType,
+                    lat: appState.currentMarkerLocation.lat, lng: appState.currentMarkerLocation.lng,
+                    timestamp: new Date().toLocaleString(), records: [], history: [createHistoryEntry('创建点位', '新建监测点位')]
+                };
+                if (zincValue !== null || manganeseParsed !== null || notes) {
+                    newPoint.records.push({ id: Date.now(), zinc: zincValue, manganese: manganeseParsed, notes: notes, timestamp: new Date().toLocaleString(), operator: appState.operatorName });
+                }
+                points.push(newPoint);
+                createMarker(newPoint);
+                showToast('新点位添加成功！', 'success');
             }
-            
+
             saveAllPointsData();
             refreshPointList();
-            
-            if (!selectedPointId) {
+            resetAddPointForm();
+            renderMarkers();
+            if (appState.selectedPointId) showPointData(appState.selectedPointId);
+            populatePointDropdown(); // 刷新下拉菜单以包含新点位
+        }
+
+        // 重置“添加/编辑”表单
+        function resetAddPointForm() {
+            appState.selectedPointId = null;
+            appState.editingRecordId = null;
+            elements.selectPointDropdown.value = 'new-point'; // 默认选择新建点位
+            ['pointCode', 'pointName', 'pointZinc', 'pointManganese', 'pointNotes'].forEach(id => elements[id].value = '');
+            elements.waterType.value = 'surface';
+            elements.saveBtn.textContent = '保存监测数据';
+            elements.startSelectLocationBtn.textContent = '选择地图点位位置';
+            if (appState.currentMarker) { appState.currentMarker.remove(); appState.currentMarker = null; }
+            appState.currentMarkerLocation = null;
+            elements.locationSelectHint.style.display = 'none';
+            elements.mapContainer.style.cursor = '';
+            appState.isSelectingLocation = false;
+            updateUIPermissions(); // 更新字段启用/禁用状态
+        }
+
+        // 填充点位选择下拉菜单
+        function populatePointDropdown() {
+            const points = appState.allMapsPointsData[appState.currentMapId] || [];
+            elements.selectPointDropdown.innerHTML = '<option value="new-point">--- 新建点位 ---</option>';
+            points.sort((a, b) => (a.name || a.code).localeCompare(b.name || b.code)).forEach(point => {
+                const option = document.createElement('option');
+                option.value = point.id;
+                option.textContent = `${point.name} (${point.code})`;
+                elements.selectPointDropdown.appendChild(option);
+            });
+            elements.selectPointDropdown.disabled = !appState.isLoggedIn;
+        }
+
+        // 处理点位选择下拉菜单变化
+        function handlePointDropdownChange() {
+            const selectedId = elements.selectPointDropdown.value;
+            if (selectedId === 'new-point') {
                 resetAddPointForm();
             } else {
-                elements.pointZinc.value = '';
-                elements.pointManganese.value = '';
-                elements.pointNotes.value = '';
-                showPointData(selectedPointId);
+                const pointId = parseInt(selectedId);
+                const point = (appState.allMapsPointsData[appState.currentMapId] || []).find(p => p.id === pointId);
+                if (point) {
+                    appState.selectedPointId = pointId;
+                    appState.editingRecordId = null; // 切换到添加新记录模式
+                    elements.pointCode.value = point.code;
+                    elements.pointName.value = point.name;
+                    elements.waterType.value = point.waterType;
+                    elements.pointZinc.value = ''; // 清空记录字段
+                    elements.pointManganese.value = '';
+                    elements.pointNotes.value = '';
+                    elements.saveBtn.textContent = `为 "${point.name}" 添加新记录`;
+                    elements.startSelectLocationBtn.textContent = '选择地图点位位置'; // 重置按钮文本
+                    // 移除临时标记
+                    if (appState.currentMarker) { appState.currentMarker.remove(); appState.currentMarker = null; }
+                    appState.currentMarkerLocation = null;
+                    elements.locationSelectHint.style.display = 'none';
+                    elements.mapContainer.style.cursor = '';
+                    appState.isSelectingLocation = false;
+                    updateUIPermissions(); // 更新字段启用/禁用状态
+                }
             }
-            
-            if (currentMarker) {
-                currentMarker.remove();
-                currentMarker = null;
-                currentMarkerLocation = null;
-            }
-        };
-
-        function resetAddPointForm() {
-            selectedPointId = null;
-            elements.pointCode.value = '';
-            elements.pointName.value = '';
-            elements.waterType.value = 'surface';
-            elements.pointZinc.value = '';
-            elements.pointManganese.value = '';
-            elements.recordDate.value = getCurrentDate();
-            elements.pointNotes.value = '';
-            if (currentMarker) {
-                currentMarker.remove();
-                currentMarker = null;
-            }
-            currentMarkerLocation = null;
-            elements.saveBtn.textContent = '保存监测数据';
-            elements.startSelectLocationBtn.style.display = isLoggedIn ? 'block' : 'none';
-            
-            document.querySelectorAll('.custom-marker').forEach(marker => marker.classList.remove('highlight'));
         }
-        
-        function addRecordToPoint(pointId) {
-            if (!isLoggedIn) {
-                showToast('请登录管理员账号才能添加记录。', 'error');
-                return;
-            }
-            selectedPointId = pointId;
-            const points = allMapsPointsData[currentMapId] || [];
-            const point = points.find(p => p.id === pointId);
-            if (point) {
-                elements.pointCode.value = point.code || '';
-                elements.pointName.value = point.name;
-                elements.waterType.value = point.waterType || 'surface';
-                elements.pointZinc.value = '';
-                elements.pointManganese.value = '';
-                elements.recordDate.value = getCurrentDate();
-                elements.pointNotes.value = '';
 
-                elements.saveBtn.textContent = '为当前点位添加记录';
-                elements.startSelectLocationBtn.style.display = 'none';
-
-                switchTab('add-tab');
-                elements.pointZinc.focus();
-                showToast(`正在为点位 "${point.name}" 添加新记录。`, 'info');
-
-                document.querySelectorAll('.custom-marker').forEach(marker => {
-                    if (marker.dataset.pointId == pointId) {
-                        marker.classList.add('highlight');
-                    } else {
-                        marker.classList.remove('highlight');
-                    }
-                });
-            }
-        };
-        
-        function editPoint(pointId) {
-            if (!isLoggedIn) {
-                showToast('请登录管理员账号才能编辑点位。', 'error');
-                return;
-            }
-            const points = allMapsPointsData[currentMapId] || [];
-            const point = points.find(p => p.id === pointId);
-            if (point) {
-                selectedPointId = pointId;
-                elements.pointCode.value = point.code || '';
-                elements.pointName.value = point.name;
-                elements.waterType.value = point.waterType || 'surface';
-
-                elements.pointZinc.value = '';
-                elements.pointManganese.value = '';
-                elements.recordDate.value = getCurrentDate();
-                elements.pointNotes.value = '';
-
-                elements.saveBtn.textContent = '保存点位信息修改';
-                elements.startSelectLocationBtn.style.display = 'none';
-                
-                switchTab('add-tab');
-                elements.pointName.focus();
-
-                if (!point.history) point.history = [];
-                point.history.unshift({
-                    id: Date.now(),
-                    action: '编辑点位信息',
-                    timestamp: new Date().toLocaleString(),
-                    operator: operatorName,
-                    note: '修改点位基本信息'
-                });
-                
-                saveAllPointsData();
-                showToast(`正在编辑点位 "${point.name}" 的基本信息。`, 'info');
-
-                document.querySelectorAll('.custom-marker').forEach(marker => {
-                    if (marker.dataset.pointId == pointId) {
-                        marker.classList.add('highlight');
-                    } else {
-                        marker.classList.remove('highlight');
-                    }
-                });
-            }
-        };
-        
-        function deletePoint(pointId) {
-            if (!isLoggedIn) {
-                showToast('请登录管理员账号才能删除点位。', 'error');
-                return;
-            }
-            if (confirm('确定要删除这个点位及其所有记录吗？此操作不可逆！')) {
-                const points = allMapsPointsData[currentMapId];
-                const deletedPoint = points.find(p => p.id === pointId);
-                allMapsPointsData[currentMapId] = points.filter(point => point.id !== pointId);
-                
-                saveAllPointsData();
-                
-                // 移除标记点
-                document.querySelectorAll('.custom-marker').forEach(marker => {
-                    if (marker.dataset.pointId == pointId) {
-                        marker.remove();
-                    }
-                });
-                
-                document.querySelector(`.point-item[data-id="${pointId}"]`)?.remove();
-                
-                if (selectedPointId === pointId) resetAddPointForm();
-                closeDataPanel();
-                refreshPointList();
-                showToast(`点位 "${deletedPoint.name}" 已成功删除！`, 'success');
-            }
-        };
-        
         function refreshPointList() {
-            elements.pointsContainer.innerHTML = '';
-            
-            const points = allMapsPointsData[currentMapId] || [];
-            if (points.length === 0) {
-                elements.pointsContainer.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">当前地图暂无监测点</p>';
-                return;
-            }
-
-            points.forEach(point => {
-                const pointItem = document.createElement('div');
-                pointItem.className = 'point-item';
-                pointItem.dataset.id = point.id;
-                pointItem.innerHTML = `
-                    <div>
-                        <span>${point.waterType === 'surface' ? '地表水' : '地下水'}监测点</span>
-                        <strong>${point.name}</strong> (${point.code || '无编号'})
+            const points = appState.allMapsPointsData[appState.currentMapId] || [];
+            elements.pointsContainer.innerHTML = points.length === 0 ? '<p style="text-align: center; color: #999;">当前地图暂无点位</p>' : points.map(point => `
+                <div class="point-item" data-id="${point.id}">
+                    <div><strong>${point.name}</strong> (${point.code})</div>
+                    <div style="font-size:0.9rem;color:#b0d0ff">${getWaterTypeName(point.waterType || 'surface')} | 记录: ${point.records?.length || 0}</div>
+                    <div style="margin-top: 10px;">
+                        <button class="action-btn btn-primary add-record-btn" ${appState.isLoggedIn ? '' : 'disabled'}>添加数据</button>
+                        <button class="action-btn btn-warning edit-point-details-btn" ${appState.isLoggedIn ? '' : 'disabled'}>编辑点位</button>
+                        <button class="action-btn btn-danger delete-point-btn" ${appState.isLoggedIn ? '' : 'disabled'}>删除点位</button>
                     </div>
-                    <div style="margin-top:5px;font-size:0.9rem;color:#b0d0ff">
-                        记录次数: ${point.records?.length || 0}<br>
-                        最后更新: ${point.records?.length > 0 ? (point.records[point.records.length - 1].date || point.records[point.records.length - 1].timestamp) : '无记录'}
-                    </div>
-                    <button class="action-btn btn-primary" ${isLoggedIn ? '' : 'disabled'}>添加记录</button>
-                    <button class="action-btn btn-warning" ${isLoggedIn ? '' : 'disabled'}>编辑</button>
-                    <button class="action-btn btn-danger" ${isLoggedIn ? '' : 'disabled'}>删除</button>
-                `;
-                
-                pointItem.addEventListener('click', function(event) {
-                    if (event.target.tagName === 'BUTTON') {
-                        if (event.target.textContent === '添加记录') addRecordToPoint(point.id);
-                        else if (event.target.textContent === '编辑') editPoint(point.id);
-                        else if (event.target.textContent === '删除') deletePoint(point.id);
-                        return;
-                    }
-                    showPointData(point.id);
-                });
-                
-                elements.pointsContainer.appendChild(pointItem);
-            });
+                </div>
+            `).join('');
         }
 
-        function showToast(message, type = 'info') {
-            elements.toastMessage.textContent = message;
-            elements.toastMessage.className = `toast-message show ${type}`;
+        function editRecord(pointId, recordId) {
+            if (!appState.isLoggedIn) return showToast('请登录管理员账号。', 'error');
+            const point = (appState.allMapsPointsData[appState.currentMapId] || []).find(p => p.id === pointId);
+            if (!point || !point.records) return;
+            const record = point.records.find(r => r.id === recordId);
+            if (!record) return;
+
+            handleTabSwitch('add-tab');
+            elements.selectPointDropdown.value = pointId; // 选中当前点位
+            elements.pointCode.value = point.code;
+            elements.pointName.value = point.name;
+            elements.waterType.value = point.waterType;
+            elements.pointZinc.value = record.zinc ?? '';
+            elements.pointManganese.value = record.manganese === -0.01 ? '<0.01' : (record.manganese ?? '');
+            elements.pointNotes.value = record.notes ?? '';
+
+            appState.selectedPointId = pointId;
+            appState.editingRecordId = recordId;
+            elements.saveBtn.textContent = `更新 "${point.name}" 的记录`;
+            elements.startSelectLocationBtn.style.display = 'none';
             
-            setTimeout(() => {
-                elements.toastMessage.classList.remove('show');
-            }, 3000);
+            updateUIPermissions(); // 确保表单字段状态正确
+            showToast(`正在编辑点位 "${point.name}" 的记录。`, 'info');
         }
 
-        function updateAdminOnlyElementsInPanel() {
-            const sidebar = elements.dataSidebar;
-            if (!sidebar.classList.contains('empty')) {
-                sidebar.querySelectorAll('.admin-only-cell').forEach(cell => {
-                    cell.style.display = isLoggedIn ? 'table-cell' : 'none';
-                });
-                sidebar.querySelector('#edit-form').style.display = 'none';
+        function deleteRecord(pointId, recordId) {
+            if (!appState.isLoggedIn) return showToast('请登录管理员账号。', 'error');
+            const point = (appState.allMapsPointsData[appState.currentMapId] || []).find(p => p.id === pointId);
+            if (!point || !point.records) return;
+
+            if (confirm(`确定要删除这条记录吗？`)) {
+                point.records = point.records.filter(r => r.id !== recordId);
+                point.history.unshift(createHistoryEntry('删除记录', `删除了记录 ID: ${recordId}`));
+                saveAllPointsData();
+                showToast('记录已删除。', 'success');
+                showPointData(pointId);
             }
         }
 
         function updateUIPermissions() {
-            if (isLoggedIn) {
-                elements.app.classList.add('admin-mode');
-                elements.controlPanel.classList.add('active');
-            } else {
-                elements.app.classList.remove('admin-mode');
-                elements.controlPanel.classList.remove('active');
-            }
+            const isAdmin = appState.isLoggedIn;
+            elements.controlPanel.classList.toggle('active', isAdmin);
+            elements.adminToggleBtn.classList.toggle('logged-in', isAdmin);
+            elements.adminToggleBtn.title = isAdmin ? `${appState.operatorName} (点击登出)` : '管理员登录';
 
-            elements.addTabButton.disabled = !isLoggedIn;
-            elements.manageTabButton.disabled = !isLoggedIn;
+            elements.addTabButton.disabled = !isAdmin;
+            elements.manageTabButton.disabled = !isAdmin;
+            elements.saveBtn.disabled = !isAdmin;
+            elements.githubOwner.disabled = !isAdmin;
+            elements.githubRepo.disabled = !isAdmin;
+            elements.githubFile.disabled = !isAdmin;
+            elements.githubToken.disabled = !isAdmin;
+            elements.saveToCloudBtn.disabled = !isAdmin;
+            elements.loadFromCloudBtn.disabled = !isAdmin;
             
-            const addPointInputs = ['point-code', 'point-name', 'water-type', 'point-zinc', 'point-manganese', 'record-date', 'point-notes'];
-            addPointInputs.forEach(id => {
-                document.getElementById(id).disabled = !isLoggedIn;
-            });
-            elements.saveBtn.disabled = !isLoggedIn;
-            elements.startSelectLocationBtn.style.display = isLoggedIn ? 'block' : 'none';
+            // 根据当前模式调整表单字段状态
+            const isEditingRecord = appState.editingRecordId !== null;
+            const isAddingNewPoint = elements.selectPointDropdown.value === 'new-point' && appState.selectedPointId === null; // 确保是新建点位模式
 
-            document.querySelectorAll('.point-item .action-btn').forEach(btn => {
-                btn.disabled = !isLoggedIn;
-            });
+            elements.selectPointDropdown.disabled = !isAdmin || isEditingRecord; // 编辑记录时不允许切换点位
+            
+            elements.pointCode.disabled = !isAdmin || isEditingRecord || !isAddingNewPoint && appState.selectedPointId !== null;
+            elements.pointName.disabled = !isAdmin || isEditingRecord || !isAddingNewPoint && appState.selectedPointId !== null;
+            elements.waterType.disabled = !isAdmin || isEditingRecord || !isAddingNewPoint && appState.selectedPointId !== null;
 
-            updateAdminOnlyElementsInPanel();
+            elements.pointZinc.disabled = !isAdmin && !isEditingRecord || (isAddingNewPoint && !isAdmin);
+            elements.pointManganese.disabled = !isAdmin && !isEditingRecord || (isAddingNewPoint && !isAdmin);
+            elements.pointNotes.disabled = !isAdmin && !isEditingRecord || (isAddingNewPoint && !isAdmin);
+            
+            // "选择地图点位位置"按钮只在新建点位模式下显示
+            elements.startSelectLocationBtn.style.display = isAdmin && isAddingNewPoint && elements.addTab.classList.contains('active') ? 'block' : 'none';
+            elements.dragHint.style.display = isAdmin ? 'block' : 'none';
+            
+            renderMarkers(); // 重新渲染标记以更新拖动事件绑定
+            refreshPointList(); // 重新渲染列表以更新按钮状态
+            if (appState.selectedPointId) showPointData(appState.selectedPointId); // 刷新侧边栏数据
+            document.querySelectorAll('.admin-only-cell').forEach(cell => cell.style.display = isAdmin ? 'table-cell' : 'none');
+        }
 
-            if (isLoggedIn) {
-                elements.adminToggleBtn.classList.add('logged-in');
-                elements.adminToggleBtn.title = `${operatorName} (点击登出)`;
-            } else {
-                elements.adminToggleBtn.classList.remove('logged-in');
-                elements.adminToggleBtn.title = `管理员登录`;
-                resetAddPointForm();
+        function loadAllPointsData() {
+            try {
+                const storedData = localStorage.getItem('allMapsPointsData');
+                if (storedData) appState.allMapsPointsData = JSON.parse(storedData);
+            } catch (e) {
+                console.error("加载本地数据失败:", e);
+                appState.allMapsPointsData = { '233': [], '666': [] };
             }
         }
 
-        function adminLogin() {
-            const password = elements.adminPasswordInput.value.trim();
-            const operator = elements.adminOperatorNameInput.value.trim();
-            
-            if (!password || !operator) {
-                showToast('请填写完整管理员密码和录入员姓名！', 'error');
-                return;
-            }
-            
-            if (password !== ADMIN_PASSWORD) {
-                showToast('管理员密码错误！', 'error');
-                return;
-            }
-            
-            isLoggedIn = true;
-            operatorName = operator;
-            elements.adminPanelOverlay.style.display = 'none';
-            elements.adminPasswordInput.value = '';
-            elements.adminOperatorNameInput.value = '';
-            
-            showToast(`欢迎，${operatorName}！已进入管理员模式。`, 'success');
-            updateUIPermissions();
-            refreshPointList();
-            
-            if (selectedPointId) showPointData(selectedPointId);
-        }
-        
-        function adminLogout() {
-            isLoggedIn = false;
-            operatorName = '';
-            selectedPointId = null;
-            editingRecordId = null;
-            
-            showToast('已安全登出管理员模式。', 'info');
-            updateUIPermissions();
-            refreshPointList();
-            closeDataPanel();
-            document.querySelectorAll('.custom-marker').forEach(marker => marker.classList.remove('highlight'));
+        function saveAllPointsData() {
+            localStorage.setItem('allMapsPointsData', JSON.stringify(appState.allMapsPointsData));
         }
 
-        function switchTab(tabId) {
-            if (!isLoggedIn) {
-                showToast('请先登录管理员账号。', 'error');
-                return;
+        async function saveToGitHub() {
+            if (!appState.isLoggedIn) return showToast('请登录管理员账号才能保存到云端。', 'error');
+            const { githubOwner, githubRepo, githubFile, githubToken } = elements;
+            const owner = githubOwner.value.trim(), repo = githubRepo.value.trim(), file = githubFile.value.trim(), token = githubToken.value.trim();
+            if (!owner || !repo || !file || !token) return showToast('请填写完整的GitHub配置信息！', 'error');
+            updateSyncStatus('正在保存数据到GitHub...', 'sync-loading');
+            try {
+                let sha = null;
+                const getResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${file}`, {
+                    headers: { 'Authorization': `token ${token}`, 'User-Agent': 'Mining-Monitoring-System' }
+                });
+                if (getResponse.ok) sha = (await getResponse.json()).sha;
+                else if (getResponse.status !== 404) throw new Error('获取文件信息失败: ' + ((await getResponse.json()).message || getResponse.statusText));
+                
+                const content = base64EncodeUnicode(JSON.stringify(appState.allMapsPointsData));
+                const message = `数据更新 - ${new Date().toLocaleString()} - ${appState.operatorName}`;
+                const putResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${file}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'User-Agent': 'Mining-Monitoring-System' },
+                    body: JSON.stringify({ message, content, sha })
+                });
+                if (!putResponse.ok) throw new Error('保存失败: ' + ((await putResponse.json()).message || putResponse.statusText));
+                
+                updateSyncStatus('数据已成功保存到GitHub！', 'sync-success');
+                updateLastSyncTime();
+                showToast('数据已保存到云端！', 'success');
+            } catch (error) {
+                console.error('保存到GitHub失败:', error);
+                updateSyncStatus(`保存失败: ${error.message}`, 'sync-error');
+                showToast(`保存失败: ${error.message}`, 'error');
             }
+        }
 
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+        async function loadFromGitHub() {
+            const { githubOwner, githubRepo, githubFile, githubToken } = elements;
+            const owner = githubOwner.value.trim(), repo = githubRepo.value.trim(), file = githubFile.value.trim(), token = githubToken.value.trim();
+            if (!owner || !repo || !file) return showToast('请填写GitHub仓库信息！', 'error');
+            updateSyncStatus('正在从GitHub加载数据...', 'sync-loading');
+            try {
+                const options = { headers: { 'User-Agent': 'Mining-Monitoring-System' } };
+                if (token) options.headers['Authorization'] = `token ${token}`;
+                const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${file}`, options);
+                if (!response.ok) throw new Error('加载失败: ' + ((await response.json()).message || response.statusText));
+                
+                const newData = JSON.parse(base64DecodeUnicode((await response.json()).content));
+                if (typeof newData === 'object' && newData['233'] && newData['666']) {
+                    appState.allMapsPointsData = newData;
+                    saveAllPointsData();
+                    renderMarkers();
+                    refreshPointList();
+                    closeDataPanel();
+                    updateSyncStatus('数据加载成功！', 'sync-success');
+                    updateLastSyncTime();
+                    showToast('数据已从云端加载！', 'success');
+                } else {
+                    throw new Error('无效的数据格式');
+                }
+            } catch (error) {
+                console.error('从GitHub加载失败:', error);
+                updateSyncStatus(`加载失败: ${error.message}`, 'sync-error');
+                showToast(`加载失败: ${error.message}`, 'error');
+            }
+        }
 
-            elements.startSelectLocationBtn.style.display = 
-                (tabId === 'add-tab' && isLoggedIn) ? 'block' : 'none';
-        };
-        
         function exportToExcel() {
             const wb = XLSX.utils.book_new();
-            
-            for (const mapId in allMapsPointsData) {
-                const points = allMapsPointsData[mapId];
-                const recordsSheetData = [
-                    ['地图', '点位名称', '点位编号', '水体类型', '记录日期', '锌监测值(mg/L)', '锰监测值(mg/L)', '备注', '录入员']
-                ];
+            for (const mapId in appState.allMapsPointsData) {
+                const points = appState.allMapsPointsData[mapId];
+                if (points.length === 0) continue;
+
+                const recordsSheetData = [['地图', '点位名称', '点位编号', '水体类型', '记录时间', '锌监测值(mg/L)', '锰监测值(mg/L)', '备注', '录入员', '纬度', '经度']];
                 
                 points.forEach(point => {
-                    point.records?.forEach(record => {
-                        let manganeseDisplay = record.manganese;
-                        if (record.manganese === -0.01) manganeseDisplay = '<0.01';
-                        
-                        recordsSheetData.push([
-                            `图 ${mapId === '233' ? 'A' : 'B'}`,
-                            point.name,
-                            point.code || '', 
-                            point.waterType === 'surface' ? '地表水' : '地下水',
-                            record.date || record.timestamp,
-                            record.zinc || '',
-                            manganeseDisplay || '',
-                            record.notes || '无',
-                            record.operator || '未知'
-                        ]);
-                    });
+                    const baseRow = [
+                        `平面图 ${mapId === '233' ? 'A' : 'B'}`,
+                        point.name, point.code || '', getWaterTypeName(point.waterType || 'surface'),
+                        '', '', '', '', '',
+                        point.lat ? point.lat.toFixed(2) : '', point.lng ? point.lng.toFixed(2) : ''
+                    ];
+                    if (!point.records || point.records.length === 0) {
+                        recordsSheetData.push(baseRow);
+                    } else {
+                        point.records.forEach(record => {
+                            let manganeseDisplay = record.manganese === -0.01 ? '<0.01' : (record.manganese || '');
+                            recordsSheetData.push([
+                                baseRow[0], baseRow[1], baseRow[2], baseRow[3],
+                                record.timestamp, record.zinc || '', manganeseDisplay, record.notes || '无', record.operator || '未知',
+                                baseRow[9], baseRow[10]
+                            ]);
+                        });
+                    }
                 });
-                
                 if (recordsSheetData.length > 1) {
-                    const recordsSheet = XLSX.utils.aoa_to_sheet(recordsSheetData);
-                    XLSX.utils.book_append_sheet(wb, recordsSheet, `图${mapId === '233' ? 'A' : 'B'}数据`);
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(recordsSheetData), `平面图${mapId === '233' ? 'A' : 'B'}数据`);
                 }
             }
-            
-            if (wb.SheetNames.length === 0) {
-                showToast('没有数据可以导出。', 'info');
-                return;
-            }
+            if (wb.SheetNames.length === 0) return showToast('没有数据可以导出。', 'info');
             XLSX.writeFile(wb, "环境监测数据.xlsx");
             showToast('数据已导出为 Excel 文件！', 'info');
-        };
+        }
 
-        // 初始化
+        function handleAdminLogin() {
+            if (elements.adminPasswordInput.value.trim() !== ADMIN_PASSWORD) return showToast('管理员密码错误！', 'error');
+            const operator = elements.adminOperatorNameInput.value.trim();
+            if (!operator) return showToast('请输入录入员姓名！', 'error');
+            appState.isLoggedIn = true;
+            appState.operatorName = operator;
+            elements.adminPanelOverlay.style.display = 'none';
+            elements.adminPasswordInput.value = '';
+            showToast(`欢迎，${appState.operatorName}！已进入管理员模式。`, 'success');
+            updateUIPermissions();
+            populatePointDropdown(); // 登录后填充下拉菜单
+        }
+
+        function handleAdminLogout() {
+            appState.isLoggedIn = false;
+            appState.operatorName = '';
+            closeDataPanel();
+            resetAddPointForm();
+            updateUIPermissions();
+            populatePointDropdown(); // 登出后禁用下拉菜单
+            showToast('已安全登出。', 'info');
+        }
+
+        function handleMapClickForLocation(e) {
+            if (!appState.isLoggedIn || !appState.isSelectingLocation) return;
+            const { displayedWidth, displayedHeight, offsetX, offsetY } = getMapImageActualDimensions();
+            const mapConfig = mapConfigurations[appState.currentMapId];
+            const containerRect = elements.mapContainer.getBoundingClientRect();
+            const clickX = e.clientX - containerRect.left;
+            const clickY = e.clientY - containerRect.top;
+
+            if (clickX < offsetX || clickX > offsetX + displayedWidth || clickY < offsetY || clickY > offsetY + displayedHeight) {
+                return showToast('请在地图图片范围内点击。', 'error');
+            }
+            if (appState.currentMarker) appState.currentMarker.remove();
+            
+            appState.currentMarkerLocation = {
+                lat: ((clickY - offsetY) / displayedHeight) * mapConfig.intrinsicHeight,
+                lng: ((clickX - offsetX) / displayedWidth) * mapConfig.intrinsicWidth,
+            };
+            const tempPoint = { ...appState.currentMarkerLocation, waterType: elements.waterType.value, code: '新点位', id: 'temp' };
+            appState.currentMarker = createMarker(tempPoint, true);
+            showToast('已选择地图位置。', 'info');
+            elements.locationSelectHint.style.display = 'none';
+            elements.mapContainer.style.cursor = '';
+            appState.isSelectingLocation = false;
+            elements.startSelectLocationBtn.textContent = '重新选择地图点位位置';
+        }
+
+        function handleTabSwitch(tabId) {
+            if (!appState.isLoggedIn) {
+                elements.adminPanelOverlay.style.display = 'flex';
+                return showToast('请先登录管理员账号。', 'error');
+            }
+            if (appState.isSelectingLocation) {
+                elements.locationSelectHint.style.display = 'none';
+                elements.mapContainer.style.cursor = '';
+                appState.isSelectingLocation = false;
+                if (appState.currentMarker) { appState.currentMarker.remove(); appState.currentMarker = null; }
+            }
+
+            elements.addTab.classList.toggle('active', tabId === 'add-tab');
+            elements.manageTab.classList.toggle('active', tabId === 'manage-tab');
+            elements.addTabButton.classList.toggle('active', tabId === 'add-tab');
+            elements.manageTabButton.classList.toggle('active', tabId === 'manage-tab');
+
+            if (tabId === 'add-tab') {
+                resetAddPointForm(); // 确保表单回到新建点位状态
+            } else if (tabId === 'manage-tab') {
+                refreshPointList();
+            }
+            updateUIPermissions();
+        }
+
+        function handlePointListClick(e) {
+            const target = e.target;
+            const pointItem = target.closest('.point-item');
+            if (!pointItem) return;
+
+            const pointId = parseInt(pointItem.dataset.id);
+            const point = (appState.allMapsPointsData[appState.currentMapId] || []).find(p => p.id === pointId);
+            if (!point) return;
+
+            if (target.classList.contains('add-record-btn')) {
+                handleTabSwitch('add-tab'); // 切换到添加/编辑记录Tab
+                elements.selectPointDropdown.value = pointId; // 选中当前点位
+                handlePointDropdownChange(); // 触发下拉菜单变化逻辑，填充点位信息并进入添加记录模式
+                showToast(`为点位 "${point.name}" 准备添加新记录。`, 'info');
+            } else if (target.classList.contains('edit-point-details-btn')) {
+                handleTabSwitch('add-tab'); // 切换到添加/编辑记录Tab
+                elements.selectPointDropdown.value = pointId; // 选中当前点位
+                // 手动设置表单字段，并进入编辑点位信息模式
+                appState.selectedPointId = pointId;
+                appState.editingRecordId = null; // 确保是编辑点位信息模式
+                elements.pointCode.value = point.code;
+                elements.pointName.value = point.name;
+                elements.waterType.value = point.waterType;
+                elements.pointZinc.value = ''; // 清空记录相关字段
+                elements.pointManganese.value = '';
+                elements.pointNotes.value = '';
+                elements.saveBtn.textContent = `更新点位 "${point.name}" 信息`;
+                elements.startSelectLocationBtn.style.display = 'none';
+                updateUIPermissions(); // 确保表单字段状态正确
+                showToast(`正在编辑点位 "${point.name}" 的基本信息。`, 'info');
+
+            } else if (target.classList.contains('delete-point-btn')) {
+                if (confirm(`确定要删除点位 "${point.name}" 及其所有记录吗？此操作不可逆！`)) {
+                    appState.allMapsPointsData[appState.currentMapId] = (appState.allMapsPointsData[appState.currentMapId] || []).filter(p => p.id !== pointId);
+                    saveAllPointsData();
+                    renderMarkers();
+                    refreshPointList();
+                    populatePointDropdown(); // 删除点位后刷新下拉菜单
+                    if (appState.selectedPointId === pointId) closeDataPanel();
+                    showToast('点位已删除。', 'success');
+                }
+            } else {
+                showPointData(pointId);
+            }
+        }
+        
+        let mapResizeObserver;
+
         function init() {
             loadAllPointsData();
             initMap();
-            refreshPointList();
             updateUIPermissions();
-            
-            // 事件绑定
+            populatePointDropdown(); // 初始化时填充下拉菜单
+
             elements.map233Btn.addEventListener('click', () => switchMap('233'));
             elements.map666Btn.addEventListener('click', () => switchMap('666'));
-            elements.adminToggleBtn.addEventListener('click', () => isLoggedIn ? adminLogout() : elements.adminPanelOverlay.style.display = 'flex');
+            elements.adminToggleBtn.addEventListener('click', () => appState.isLoggedIn ? handleAdminLogout() : (elements.adminPanelOverlay.style.display = 'flex'));
             elements.adminPanelCloseBtn.addEventListener('click', () => elements.adminPanelOverlay.style.display = 'none');
-            elements.adminLoginConfirmBtn.addEventListener('click', adminLogin);
-            elements.startSelectLocationBtn.addEventListener('click', function() {
-                if (!isLoggedIn) return showToast('请先登录管理员账号。', 'error');
+            elements.adminLoginConfirmBtn.addEventListener('click', handleAdminLogin);
+            elements.adminPasswordInput.addEventListener('keypress', e => e.key === 'Enter' && handleAdminLogin());
+            elements.adminOperatorNameInput.addEventListener('keypress', e => e.key === 'Enter' && handleAdminLogin());
+            elements.saveBtn.addEventListener('click', savePointData);
+            elements.startSelectLocationBtn.addEventListener('click', () => {
+                appState.isSelectingLocation = true;
                 elements.locationSelectHint.style.display = 'block';
-                document.getElementById('map-container').style.cursor = 'crosshair';
+                elements.mapContainer.style.cursor = 'crosshair';
                 showToast('请点击地图选择点位位置。', 'info');
+                if (appState.currentMarker) { appState.currentMarker.remove(); appState.currentMarker = null; }
+                elements.startSelectLocationBtn.textContent = '重新选择地图点位位置';
             });
-            document.querySelector('.export-btn').addEventListener('click', exportToExcel);
+            elements.mapContainer.addEventListener('click', handleMapClickForLocation);
             
-            // 添加折叠按钮功能
+            elements.mapContainer.addEventListener('mousemove', handleMapMouseMove);
+            document.addEventListener('mouseup', handleMapMouseUp);
+            
+            elements.addTabButton.addEventListener('click', () => handleTabSwitch('add-tab'));
+            elements.manageTabButton.addEventListener('click', () => handleTabSwitch('manage-tab'));
+            elements.selectPointDropdown.addEventListener('change', handlePointDropdownChange); // 监听下拉菜单变化
+
             document.querySelector('.collapse-btn').addEventListener('click', function() {
-                const panel = elements.controlPanel;
-                panel.classList.toggle('collapsed');
                 const icon = this.querySelector('i');
-                if (panel.classList.contains('collapsed')) {
-                    icon.classList.remove('fa-chevron-left');
-                    icon.classList.add('fa-chevron-right');
-                } else {
-                    icon.classList.remove('fa-chevron-right');
-                    icon.classList.add('fa-chevron-left');
+                elements.controlPanel.classList.toggle('collapsed');
+                icon.className = elements.controlPanel.classList.contains('collapsed') ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+            });
+
+            elements.saveToCloudBtn.addEventListener('click', saveToGitHub);
+            elements.loadFromCloudBtn.addEventListener('click', loadFromGitHub);
+            document.querySelector('.export-btn').addEventListener('click', exportToExcel);
+            elements.pointsContainer.addEventListener('click', handlePointListClick);
+            elements.dataSidebar.addEventListener('click', e => { if (e.target.classList.contains('close-btn')) closeDataPanel(); });
+
+            mapResizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    if (entry.target === elements.mapContainer) {
+                        renderMarkers();
+                        if (appState.currentMarker && appState.currentMarkerLocation) {
+                            appState.currentMarker.remove();
+                            const tempPoint = { ...appState.currentMarkerLocation, waterType: elements.waterType.value, code: '新点位', id: 'temp' };
+                            appState.currentMarker = createMarker(tempPoint, true);
+                        }
+                    }
                 }
             });
-            
-            elements.addTabButton.addEventListener('click', () => switchTab('add-tab'));
-            elements.manageTabButton.addEventListener('click', () => switchTab('manage-tab'));
-            elements.saveBtn.addEventListener('click', savePointData);
-            elements.adminPasswordInput.addEventListener('keypress', e => e.key === 'Enter' && adminLogin());
-            elements.adminOperatorNameInput.addEventListener('keypress', e => e.key === 'Enter' && adminLogin());
-            elements.adminPanelOverlay.addEventListener('click', e => e.target === elements.adminPanelOverlay && (elements.adminPanelOverlay.style.display = 'none'));
-            
-            // 添加窗口大小变化事件，重新渲染标记点
-            window.addEventListener('resize', function() {
-                renderMarkers();
-            });
-            
-            // 添加地图点击事件 - 修复游客模式点击无响应问题
-            document.getElementById('map-container').addEventListener('click', handleMapClickForLocationSelection);
+            mapResizeObserver.observe(elements.mapContainer);
+
+            const detectDevTools = () => {
+                if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+                    elements.devtoolsOverlay.style.display = 'flex';
+                } else {
+                    elements.devtoolsOverlay.style.display = 'none';
+                }
+            };
+            window.addEventListener('resize', detectDevTools);
+            window.addEventListener('load', detectDevTools);
+            document.addEventListener('contextmenu', e => { if (!appState.isLoggedIn) e.preventDefault(); });
         }
 
-        window.onload = init;
+        init();
+    });
     </script>
 </body>
 </html>
