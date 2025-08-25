@@ -32,6 +32,7 @@
         .form-group { margin-bottom: 18px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: #b0d0ff; font-size: 0.95rem; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid rgba(74, 175, 80, 0.3); border-radius: 6px; font-size: 0.95rem; background-color: rgba(10, 26, 42, 0.6); color: #e0f7ff; transition: all 0.2s ease; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8); cursor: pointer; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: #4CAF50; box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); }
         textarea { height: 100px; resize: vertical; }
         button { background: linear-gradient(135deg, #4CAF50, #3d8b40); color: white; border: none; padding: 14px 0; width: 100%; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: all 0.3s; font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -39,8 +40,32 @@
         button:disabled { background: #445566; cursor: not-allowed; opacity: 0.6; }
         .data-content { flex: 1; overflow-y: auto; padding-right: 10px; }
         .data-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid rgba(74, 175, 80, 0.4); }
-        .close-btn { background: #f44336; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .close-btn:hover { transform: rotate(90deg); background: #ff6b5b; }
+        
+        /* --- 方案一：美化后的关闭按钮样式 --- */
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1); /* 半透明背景 */
+            color: #a8e6ff; /* 图标颜色与主题文字颜色匹配 */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* 轻微的边框 */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: none; /* 移除默认阴影 */
+        }
+
+        .close-btn:hover {
+            background: #e74c3c; /* 悬停时变红 */
+            color: white; /* 图标变白 */
+            border-color: transparent;
+            transform: scale(1.1) rotate(90deg); /* 放大并旋转 */
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.6); /* 添加红色光晕效果 */
+        }
+        /* --- 样式修改结束 --- */
+
         .admin-panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 2000; display: none; justify-content: center; align-items: center; }
         .admin-panel-content { background: rgba(15, 30, 45, 0.98); border-radius: 15px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8); padding: 35px; width: 480px; max-width: 90%; color: #ecf0f1; backdrop-filter: blur(12px); border: 1px solid rgba(74, 175, 80, 0.4); position: relative; }
         .admin-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid rgba(230, 126, 34, 0.45); }
@@ -165,8 +190,11 @@
                         <div class="form-group"><label for="point-code">点位编号</label><input type="text" id="point-code" placeholder="例如: W1, W2" disabled></div>
                         <div class="form-group"><label for="point-name">点位名称</label><input type="text" id="point-name" placeholder="例如: 1# xxxx" disabled></div>
                         <div class="form-group"><label for="water-type">水体类型</label><select id="water-type" disabled><option value="surface">地表水</option><option value="ground">地下水</option></select></div>
+                        <hr style="border-color: rgba(74, 175, 80, 0.2); margin: 20px 0;">
+                        <div class="form-group"><label for="monitoring-date">监测时间</label><input type="date" id="monitoring-date" disabled></div>
+                        <div class="form-group"><label for="operator-name">录入人</label><input type="text" id="operator-name" placeholder="输入录入人姓名" disabled></div>
                         <div class="form-group"><label for="point-zinc">锌监测值(mg/L)</label><input type="number" id="point-zinc" step="0.1" placeholder="输入锌监测值" disabled></div>
-                        <div class="form-group"><label for="point-manganese">锰监测值(mg/L)</label><input type="text" id="point-manganese" placeholder="输入锰监测值 (可输入 &lt;0.01)" disabled><span class="value-info">可输入数字或"&lt;0.01"格式</span></div>
+                        <div class="form-group"><label for="point-manganese">锰监测值(mg/L)</label><input type="text" id="point-manganese" placeholder="输入锰监测值 (可输入 <0.01)" disabled><span class="value-info">可输入数字或"&lt;0.01"格式</span></div>
                         <div class="form-group"><label for="point-notes">现场情况记录</label><textarea id="point-notes" placeholder="记录现场情况..." disabled></textarea></div>
                         <div class="form-group"><button id="start-select-location-btn" class="action-btn btn-warning" style="width: 100%; display: none;"><i class="fas fa-map-marker-alt"></i> 选择地图点位位置</button></div>
                         <button id="save-btn" disabled>保存监测数据</button>
@@ -195,10 +223,9 @@
         <div class="admin-panel-content">
             <div class="admin-panel-header">
                 <h2 class="admin-panel-title"><i class="fas fa-lock"></i> 管理员登录</h2>
-                <button class="close-btn" id="admin-panel-close-btn">&times;</button>
+                <button class="close-btn" id="admin-panel-close-btn"><i class="fas fa-times"></i></button>
             </div>
             <div class="form-group"><label for="admin-password">管理密码</label><input type="password" id="admin-password" placeholder="请输入管理密码"></div>
-            <div class="form-group"><label for="admin-operator-name">录入员姓名</label><input type="text" id="admin-operator-name" placeholder="请输入您的姓名"></div>
             <button id="admin-login-confirm" class="btn-primary"><i class="fas fa-sign-in-alt"></i> 登录验证</button>
         </div>
     </div>
@@ -212,28 +239,27 @@
 
         const appState = {
             isLoggedIn: false,
-            operatorName: '',
             currentMapId: '233',
             allMapsPointsData: { '233': [], '666': [] },
-            currentMarker: null, // 临时标记DOM元素 (用于选择位置时预览)
-            currentMarkerLocation: null, // {lat, lng} - 临时标记的逻辑坐标
-            selectedPointId: null, // 正在查看或操作的点位ID
-            editingRecordId: null, // 正在编辑的记录ID (null表示添加新记录)
-            isDragging: false, // 是否正在拖动点位
-            dragOffsetX: 0, // 拖动时鼠标相对于标记左上角的偏移
-            dragOffsetY: 0, // 拖动时鼠标相对于标记左上角的偏移
-            dragElement: null, // 当前被拖动的DOM元素
-            dragPointId: null, // 当前被拖动的点位ID
-            isSelectingLocation: false, // 是否处于选择点位位置模式
+            currentMarker: null, 
+            currentMarkerLocation: null,
+            selectedPointId: null,
+            editingRecordId: null,
+            isDragging: false,
+            dragOffsetX: 0,
+            dragOffsetY: 0,
+            dragElement: null,
+            dragPointId: null,
+            isSelectingLocation: false,
         };
 
         const mapConfigurations = {
-            '233': { imageUrl: '233.jpg', intrinsicWidth: 1776, intrinsicHeight: 907 }, // 原始图片尺寸
-            '666': { imageUrl: '666.jpg', intrinsicWidth: 1920, intrinsicHeight: 1279 } // 原始图片尺寸
+            '233': { imageUrl: '233.jpg', intrinsicWidth: 1776, intrinsicHeight: 907 },
+            '666': { imageUrl: '666.jpg', intrinsicWidth: 1920, intrinsicHeight: 1279 }
         };
 
         const pointIcons = {
-            surface: { className: 'custom-marker', html: '<div class="marker-pin" style="background:#4CAF50"><i class="fas fa-water"></i></div><div class="marker-label"></div>', iconAnchor: [16, 32] }, // 锚点相对于markerElement左上角
+            surface: { className: 'custom-marker', html: '<div class="marker-pin" style="background:#4CAF50"><i class="fas fa-water"></i></div><div class="marker-label"></div>', iconAnchor: [16, 32] },
             ground: { className: 'custom-marker', html: '<div class="marker-pin" style="background:#1abc9c"><i class="fas fa-tint"></i></div><div class="marker-label"></div>', iconAnchor: [16, 32] }
         };
 
@@ -253,17 +279,18 @@
             adminLoginConfirmBtn: document.getElementById('admin-login-confirm'),
             startSelectLocationBtn: document.getElementById('start-select-location-btn'),
             saveBtn: document.getElementById('save-btn'),
-            selectPointDropdown: document.getElementById('select-point-dropdown'), // 新增点位选择下拉菜单
+            selectPointDropdown: document.getElementById('select-point-dropdown'),
             pointCode: document.getElementById('point-code'),
             pointName: document.getElementById('point-name'),
             waterType: document.getElementById('water-type'),
+            monitoringDate: document.getElementById('monitoring-date'),
+            operatorName: document.getElementById('operator-name'),
             pointZinc: document.getElementById('point-zinc'),
             pointManganese: document.getElementById('point-manganese'),
             pointNotes: document.getElementById('point-notes'),
             adminPanelOverlay: document.getElementById('admin-panel-overlay'),
             adminPanelCloseBtn: document.getElementById('admin-panel-close-btn'),
             adminPasswordInput: document.getElementById('admin-password'),
-            adminOperatorNameInput: document.getElementById('admin-operator-name'),
             addTabButton: document.getElementById('add-tab-button'),
             manageTabButton: document.getElementById('manage-tab-button'),
             addTab: document.getElementById('add-tab'),
@@ -300,7 +327,7 @@
         const parseManganeseInput = (inputValue) => {
             if (!inputValue || inputValue.trim() === '') return null;
             const trimmedValue = inputValue.trim();
-            if (trimmedValue.startsWith('<')) return -0.01; // 用负数表示 "<0.01"
+            if (trimmedValue.startsWith('<')) return -0.01;
             const num = parseFloat(trimmedValue);
             return isNaN(num) ? 'invalid' : num;
         };
@@ -311,12 +338,12 @@
             return value;
         };
 
-        const createHistoryEntry = (action, note) => ({
+        const createHistoryEntry = (action, note, operator = '系统') => ({
             id: Date.now(),
             action,
             note,
             timestamp: new Date().toLocaleString(),
-            operator: appState.operatorName,
+            operator: operator,
         });
 
         const getWaterTypeName = (waterType) => {
@@ -327,7 +354,6 @@
         const base64EncodeUnicode = (str) => btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
         const base64DecodeUnicode = (str) => decodeURIComponent(Array.prototype.map.call(atob(str), (c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
 
-        // 获取图片在容器中的实际显示尺寸和偏移量，用于准确计算点位位置
         function getMapImageActualDimensions() {
             const img = elements.mapImage;
             const container = elements.mapContainer;
@@ -370,7 +396,7 @@
             closeDataPanel();
             resetAddPointForm();
             refreshPointList();
-            populatePointDropdown(); // 切换地图后刷新下拉菜单
+            populatePointDropdown();
             showToast(`已切换至图 ${mapId === '233' ? 'A' : 'B'}`, 'info');
         }
 
@@ -412,7 +438,7 @@
         }
 
         function enableMarkerDragging(markerElement, pointId) {
-            markerElement.removeEventListener('mousedown', handleMarkerMouseDown); // 避免重复绑定
+            markerElement.removeEventListener('mousedown', handleMarkerMouseDown);
             markerElement.classList.add('draggable');
             markerElement.addEventListener('mousedown', handleMarkerMouseDown);
 
@@ -473,7 +499,7 @@
                 point.lat = newLat;
                 point.lng = newLng;
                 if (!point.history) point.history = [];
-                point.history.unshift(createHistoryEntry('更新点位位置', `点位坐标更新为 (${newLat.toFixed(2)}, ${newLng.toFixed(2)})`));
+                point.history.unshift(createHistoryEntry('更新点位位置', `点位坐标更新为 (${newLat.toFixed(2)}, ${newLng.toFixed(2)})`, '管理员'));
                 saveAllPointsData();
                 showToast(`点位 "${point.name}" 位置已更新！`, 'success');
             }
@@ -491,7 +517,7 @@
             
             const recordsHistory = (point.records || []).slice().reverse().map(record => `
                 <tr data-record-id="${record.id}">
-                    <td>${record.timestamp}</td>
+                    <td>${record.monitoringDate || record.timestamp.split(' ')[0]}</td>
                     <td>${record.zinc ?? '未记录'}</td>
                     <td>${formatManganeseForDisplay(record.manganese)}</td>
                     <td>${record.notes || '无'}</td>
@@ -507,13 +533,13 @@
                 <div class="data-content">
                     <div class="data-header">
                         <h3>${point.name} (${point.code || '无编号'})</h3>
-                        <button class="close-btn">&times;</button>
+                        <button class="close-btn"><i class="fas fa-times"></i></button>
                     </div>
                     <p><strong>水体类型:</strong> ${getWaterTypeName(point.waterType || 'surface')} | <strong>记录数:</strong> ${point.records?.length || 0}</p>
                     <h4 style="margin-top: 20px;">记录历史</h4>
                     <div style="max-height: 380px; overflow-y: auto;">
                         <table class="data-table">
-                            <thead><tr><th>时间</th><th>锌</th><th>锰</th><th>备注</th><th>录入员</th><th class="admin-only-cell" style="${appState.isLoggedIn ? '' : 'display: none;'}">操作</th></tr></thead>
+                            <thead><tr><th>监测时间</th><th>锌</th><th>锰</th><th>备注</th><th>录入员</th><th class="admin-only-cell" style="${appState.isLoggedIn ? '' : 'display: none;'}">操作</th></tr></thead>
                             <tbody>${recordsHistory || `<tr><td colspan="6" style="text-align:center;">暂无历史记录</td></tr>`}</tbody>
                         </table>
                     </div>
@@ -543,17 +569,21 @@
             const pointCode = elements.pointCode.value.trim();
             const pointName = elements.pointName.value.trim();
             const waterType = elements.waterType.value;
+            const monitoringDate = elements.monitoringDate.value;
+            const operatorName = elements.operatorName.value.trim();
             const zincValue = elements.pointZinc.value ? parseFloat(elements.pointZinc.value) : null;
             const manganeseParsed = parseManganeseInput(elements.pointManganese.value);
             const notes = elements.pointNotes.value;
 
             if (!pointName || !pointCode) return showToast('点位名称和编号不能为空！', 'error');
+            if (!monitoringDate) return showToast('监测时间不能为空！', 'error');
+            if (!operatorName) return showToast('录入人姓名不能为空！', 'error');
             if (zincValue !== null && isNaN(zincValue)) return showToast('锌监测值必须是数字！', 'error');
             if (manganeseParsed === 'invalid') return showToast('锰监测值格式错误！', 'error');
             
             const points = appState.allMapsPointsData[appState.currentMapId];
             
-            if (appState.selectedPointId) { // 编辑现有记录或点位信息
+            if (appState.selectedPointId) {
                 const point = points.find(p => p.id === appState.selectedPointId);
                 if (!point) return;
                 
@@ -561,42 +591,55 @@
                     return showToast('点位编号已存在！', 'error');
                 }
 
-                // 更新点位基本信息
                 point.name = pointName;
                 point.code = pointCode;
                 point.waterType = waterType;
 
-                if (appState.editingRecordId) { // 编辑现有记录
+                const newRecordData = { 
+                    zinc: zincValue, 
+                    manganese: manganeseParsed, 
+                    notes: notes, 
+                    operator: operatorName, 
+                    monitoringDate: monitoringDate 
+                };
+
+                if (appState.editingRecordId) {
                     const recordIndex = point.records.findIndex(r => r.id === appState.editingRecordId);
                     if (recordIndex !== -1) {
-                        point.records[recordIndex] = {
-                            ...point.records[recordIndex],
-                            zinc: zincValue, manganese: manganeseParsed, notes: notes, operator: appState.operatorName
-                        };
-                        point.history.unshift(createHistoryEntry('编辑记录', `编辑了记录 ID: ${appState.editingRecordId}`));
+                        point.records[recordIndex] = { ...point.records[recordIndex], ...newRecordData };
+                        point.history.unshift(createHistoryEntry('编辑记录', `编辑了记录 ID: ${appState.editingRecordId}`, operatorName));
                         showToast(`点位 "${point.name}" 的记录已更新！`, 'success');
                     }
-                } else { // 为选定点位添加新记录
+                } else {
                     if (zincValue !== null || manganeseParsed !== null || notes) {
                         if (!point.records) point.records = [];
-                        point.records.push({ id: Date.now(), zinc: zincValue, manganese: manganeseParsed, notes: notes, timestamp: new Date().toLocaleString(), operator: appState.operatorName });
-                        point.history.unshift(createHistoryEntry('添加记录', `添加新监测记录`));
+                        const fullRecord = { ...newRecordData, id: Date.now(), timestamp: new Date().toLocaleString() };
+                        point.records.push(fullRecord);
+                        point.history.unshift(createHistoryEntry('添加记录', `添加新监测记录`, operatorName));
                         showToast(`为点位 "${point.name}" 添加了新记录！`, 'success');
                     } else {
                         showToast('点位信息已更新，但未添加新的监测数据。', 'info');
                     }
                 }
-            } else { // 创建新点位
+            } else {
                 if (!appState.currentMarkerLocation) return showToast('请先在地图上选择点位位置！', 'error');
                 if (points.some(p => p.code === pointCode)) return showToast('点位编号已存在！', 'error');
 
                 const newPoint = {
                     id: Date.now(), mapId: appState.currentMapId, code: pointCode, name: pointName, waterType: waterType,
                     lat: appState.currentMarkerLocation.lat, lng: appState.currentMarkerLocation.lng,
-                    timestamp: new Date().toLocaleString(), records: [], history: [createHistoryEntry('创建点位', '新建监测点位')]
+                    timestamp: new Date().toLocaleString(), records: [], history: [createHistoryEntry('创建点位', '新建监测点位', operatorName)]
                 };
                 if (zincValue !== null || manganeseParsed !== null || notes) {
-                    newPoint.records.push({ id: Date.now(), zinc: zincValue, manganese: manganeseParsed, notes: notes, timestamp: new Date().toLocaleString(), operator: appState.operatorName });
+                    newPoint.records.push({ 
+                        id: Date.now(), 
+                        zinc: zincValue, 
+                        manganese: manganeseParsed, 
+                        notes: notes, 
+                        timestamp: new Date().toLocaleString(), 
+                        operator: operatorName, 
+                        monitoringDate: monitoringDate 
+                    });
                 }
                 points.push(newPoint);
                 createMarker(newPoint);
@@ -608,15 +651,15 @@
             resetAddPointForm();
             renderMarkers();
             if (appState.selectedPointId) showPointData(appState.selectedPointId);
-            populatePointDropdown(); // 刷新下拉菜单以包含新点位
+            populatePointDropdown();
         }
 
-        // 重置“添加/编辑”表单
         function resetAddPointForm() {
             appState.selectedPointId = null;
             appState.editingRecordId = null;
-            elements.selectPointDropdown.value = 'new-point'; // 默认选择新建点位
-            ['pointCode', 'pointName', 'pointZinc', 'pointManganese', 'pointNotes'].forEach(id => elements[id].value = '');
+            elements.selectPointDropdown.value = 'new-point';
+            ['pointCode', 'pointName', 'operatorName', 'pointZinc', 'pointManganese', 'pointNotes'].forEach(id => elements[id].value = '');
+            elements.monitoringDate.value = new Date().toISOString().split('T')[0];
             elements.waterType.value = 'surface';
             elements.saveBtn.textContent = '保存监测数据';
             elements.startSelectLocationBtn.textContent = '选择地图点位位置';
@@ -625,10 +668,9 @@
             elements.locationSelectHint.style.display = 'none';
             elements.mapContainer.style.cursor = '';
             appState.isSelectingLocation = false;
-            updateUIPermissions(); // 更新字段启用/禁用状态
+            updateUIPermissions();
         }
 
-        // 填充点位选择下拉菜单
         function populatePointDropdown() {
             const points = appState.allMapsPointsData[appState.currentMapId] || [];
             elements.selectPointDropdown.innerHTML = '<option value="new-point">--- 新建点位 ---</option>';
@@ -641,7 +683,6 @@
             elements.selectPointDropdown.disabled = !appState.isLoggedIn;
         }
 
-        // 处理点位选择下拉菜单变化
         function handlePointDropdownChange() {
             const selectedId = elements.selectPointDropdown.value;
             if (selectedId === 'new-point') {
@@ -651,22 +692,23 @@
                 const point = (appState.allMapsPointsData[appState.currentMapId] || []).find(p => p.id === pointId);
                 if (point) {
                     appState.selectedPointId = pointId;
-                    appState.editingRecordId = null; // 切换到添加新记录模式
+                    appState.editingRecordId = null;
                     elements.pointCode.value = point.code;
                     elements.pointName.value = point.name;
                     elements.waterType.value = point.waterType;
-                    elements.pointZinc.value = ''; // 清空记录字段
+                    elements.monitoringDate.value = new Date().toISOString().split('T')[0];
+                    elements.operatorName.value = '';
+                    elements.pointZinc.value = '';
                     elements.pointManganese.value = '';
                     elements.pointNotes.value = '';
                     elements.saveBtn.textContent = `为 "${point.name}" 添加新记录`;
-                    elements.startSelectLocationBtn.textContent = '选择地图点位位置'; // 重置按钮文本
-                    // 移除临时标记
+                    elements.startSelectLocationBtn.textContent = '选择地图点位位置';
                     if (appState.currentMarker) { appState.currentMarker.remove(); appState.currentMarker = null; }
                     appState.currentMarkerLocation = null;
                     elements.locationSelectHint.style.display = 'none';
                     elements.mapContainer.style.cursor = '';
                     appState.isSelectingLocation = false;
-                    updateUIPermissions(); // 更新字段启用/禁用状态
+                    updateUIPermissions();
                 }
             }
         }
@@ -694,10 +736,12 @@
             if (!record) return;
 
             handleTabSwitch('add-tab');
-            elements.selectPointDropdown.value = pointId; // 选中当前点位
+            elements.selectPointDropdown.value = pointId;
             elements.pointCode.value = point.code;
             elements.pointName.value = point.name;
             elements.waterType.value = point.waterType;
+            elements.monitoringDate.value = record.monitoringDate || '';
+            elements.operatorName.value = record.operator || '';
             elements.pointZinc.value = record.zinc ?? '';
             elements.pointManganese.value = record.manganese === -0.01 ? '<0.01' : (record.manganese ?? '');
             elements.pointNotes.value = record.notes ?? '';
@@ -707,7 +751,7 @@
             elements.saveBtn.textContent = `更新 "${point.name}" 的记录`;
             elements.startSelectLocationBtn.style.display = 'none';
             
-            updateUIPermissions(); // 确保表单字段状态正确
+            updateUIPermissions();
             showToast(`正在编辑点位 "${point.name}" 的记录。`, 'info');
         }
 
@@ -717,8 +761,9 @@
             if (!point || !point.records) return;
 
             if (confirm(`确定要删除这条记录吗？`)) {
+                const recordToDelete = point.records.find(r => r.id === recordId);
                 point.records = point.records.filter(r => r.id !== recordId);
-                point.history.unshift(createHistoryEntry('删除记录', `删除了记录 ID: ${recordId}`));
+                point.history.unshift(createHistoryEntry('删除记录', `删除了记录 ID: ${recordId}`, recordToDelete?.operator || '未知'));
                 saveAllPointsData();
                 showToast('记录已删除。', 'success');
                 showPointData(pointId);
@@ -729,7 +774,7 @@
             const isAdmin = appState.isLoggedIn;
             elements.controlPanel.classList.toggle('active', isAdmin);
             elements.adminToggleBtn.classList.toggle('logged-in', isAdmin);
-            elements.adminToggleBtn.title = isAdmin ? `${appState.operatorName} (点击登出)` : '管理员登录';
+            elements.adminToggleBtn.title = isAdmin ? `管理员 (点击登出)` : '管理员登录';
 
             elements.addTabButton.disabled = !isAdmin;
             elements.manageTabButton.disabled = !isAdmin;
@@ -741,27 +786,26 @@
             elements.saveToCloudBtn.disabled = !isAdmin;
             elements.loadFromCloudBtn.disabled = !isAdmin;
             
-            // 根据当前模式调整表单字段状态
             const isEditingRecord = appState.editingRecordId !== null;
-            const isAddingNewPoint = elements.selectPointDropdown.value === 'new-point' && appState.selectedPointId === null; // 确保是新建点位模式
+            const isAddingNewPoint = elements.selectPointDropdown.value === 'new-point' && appState.selectedPointId === null;
 
-            elements.selectPointDropdown.disabled = !isAdmin || isEditingRecord; // 编辑记录时不允许切换点位
+            elements.selectPointDropdown.disabled = !isAdmin || isEditingRecord;
             
-            elements.pointCode.disabled = !isAdmin || isEditingRecord || !isAddingNewPoint && appState.selectedPointId !== null;
-            elements.pointName.disabled = !isAdmin || isEditingRecord || !isAddingNewPoint && appState.selectedPointId !== null;
-            elements.waterType.disabled = !isAdmin || isEditingRecord || !isAddingNewPoint && appState.selectedPointId !== null;
+            elements.pointCode.disabled = !isAdmin || isEditingRecord || (!isAddingNewPoint && appState.selectedPointId !== null);
+            elements.pointName.disabled = !isAdmin || isEditingRecord || (!isAddingNewPoint && appState.selectedPointId !== null);
+            elements.waterType.disabled = !isAdmin || isEditingRecord || (!isAddingNewPoint && appState.selectedPointId !== null);
 
-            elements.pointZinc.disabled = !isAdmin && !isEditingRecord || (isAddingNewPoint && !isAdmin);
-            elements.pointManganese.disabled = !isAdmin && !isEditingRecord || (isAddingNewPoint && !isAdmin);
-            elements.pointNotes.disabled = !isAdmin && !isEditingRecord || (isAddingNewPoint && !isAdmin);
+            const recordFields = ['monitoringDate', 'operatorName', 'pointZinc', 'pointManganese', 'pointNotes'];
+            recordFields.forEach(id => {
+                elements[id].disabled = !isAdmin;
+            });
             
-            // "选择地图点位位置"按钮只在新建点位模式下显示
             elements.startSelectLocationBtn.style.display = isAdmin && isAddingNewPoint && elements.addTab.classList.contains('active') ? 'block' : 'none';
             elements.dragHint.style.display = isAdmin ? 'block' : 'none';
             
-            renderMarkers(); // 重新渲染标记以更新拖动事件绑定
-            refreshPointList(); // 重新渲染列表以更新按钮状态
-            if (appState.selectedPointId) showPointData(appState.selectedPointId); // 刷新侧边栏数据
+            renderMarkers();
+            refreshPointList();
+            if (appState.selectedPointId) showPointData(appState.selectedPointId);
             document.querySelectorAll('.admin-only-cell').forEach(cell => cell.style.display = isAdmin ? 'table-cell' : 'none');
         }
 
@@ -794,7 +838,7 @@
                 else if (getResponse.status !== 404) throw new Error('获取文件信息失败: ' + ((await getResponse.json()).message || getResponse.statusText));
                 
                 const content = base64EncodeUnicode(JSON.stringify(appState.allMapsPointsData));
-                const message = `数据更新 - ${new Date().toLocaleString()} - ${appState.operatorName}`;
+                const message = `数据更新 - ${new Date().toLocaleString()}`;
                 const putResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${file}`, {
                     method: 'PUT',
                     headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'User-Agent': 'Mining-Monitoring-System' },
@@ -849,7 +893,7 @@
                 const points = appState.allMapsPointsData[mapId];
                 if (points.length === 0) continue;
 
-                const recordsSheetData = [['地图', '点位名称', '点位编号', '水体类型', '记录时间', '锌监测值(mg/L)', '锰监测值(mg/L)', '备注', '录入员', '纬度', '经度']];
+                const recordsSheetData = [['地图', '点位名称', '点位编号', '水体类型', '监测时间', '锌监测值(mg/L)', '锰监测值(mg/L)', '备注', '录入员', '纬度', '经度']];
                 
                 points.forEach(point => {
                     const baseRow = [
@@ -865,7 +909,7 @@
                             let manganeseDisplay = record.manganese === -0.01 ? '<0.01' : (record.manganese || '');
                             recordsSheetData.push([
                                 baseRow[0], baseRow[1], baseRow[2], baseRow[3],
-                                record.timestamp, record.zinc || '', manganeseDisplay, record.notes || '无', record.operator || '未知',
+                                record.monitoringDate || '', record.zinc || '', manganeseDisplay, record.notes || '无', record.operator || '未知',
                                 baseRow[9], baseRow[10]
                             ]);
                         });
@@ -882,24 +926,20 @@
 
         function handleAdminLogin() {
             if (elements.adminPasswordInput.value.trim() !== ADMIN_PASSWORD) return showToast('管理员密码错误！', 'error');
-            const operator = elements.adminOperatorNameInput.value.trim();
-            if (!operator) return showToast('请输入录入员姓名！', 'error');
             appState.isLoggedIn = true;
-            appState.operatorName = operator;
             elements.adminPanelOverlay.style.display = 'none';
             elements.adminPasswordInput.value = '';
-            showToast(`欢迎，${appState.operatorName}！已进入管理员模式。`, 'success');
+            showToast(`欢迎！已进入管理员模式。`, 'success');
             updateUIPermissions();
-            populatePointDropdown(); // 登录后填充下拉菜单
+            populatePointDropdown();
         }
 
         function handleAdminLogout() {
             appState.isLoggedIn = false;
-            appState.operatorName = '';
             closeDataPanel();
             resetAddPointForm();
             updateUIPermissions();
-            populatePointDropdown(); // 登出后禁用下拉菜单
+            populatePointDropdown();
             showToast('已安全登出。', 'info');
         }
 
@@ -947,7 +987,7 @@
             elements.manageTabButton.classList.toggle('active', tabId === 'manage-tab');
 
             if (tabId === 'add-tab') {
-                resetAddPointForm(); // 确保表单回到新建点位状态
+                resetAddPointForm();
             } else if (tabId === 'manage-tab') {
                 refreshPointList();
             }
@@ -964,25 +1004,26 @@
             if (!point) return;
 
             if (target.classList.contains('add-record-btn')) {
-                handleTabSwitch('add-tab'); // 切换到添加/编辑记录Tab
-                elements.selectPointDropdown.value = pointId; // 选中当前点位
-                handlePointDropdownChange(); // 触发下拉菜单变化逻辑，填充点位信息并进入添加记录模式
+                handleTabSwitch('add-tab');
+                elements.selectPointDropdown.value = pointId;
+                handlePointDropdownChange();
                 showToast(`为点位 "${point.name}" 准备添加新记录。`, 'info');
             } else if (target.classList.contains('edit-point-details-btn')) {
-                handleTabSwitch('add-tab'); // 切换到添加/编辑记录Tab
-                elements.selectPointDropdown.value = pointId; // 选中当前点位
-                // 手动设置表单字段，并进入编辑点位信息模式
+                handleTabSwitch('add-tab');
+                elements.selectPointDropdown.value = pointId;
                 appState.selectedPointId = pointId;
-                appState.editingRecordId = null; // 确保是编辑点位信息模式
+                appState.editingRecordId = null;
                 elements.pointCode.value = point.code;
                 elements.pointName.value = point.name;
                 elements.waterType.value = point.waterType;
-                elements.pointZinc.value = ''; // 清空记录相关字段
+                elements.monitoringDate.value = new Date().toISOString().split('T')[0];
+                elements.operatorName.value = '';
+                elements.pointZinc.value = '';
                 elements.pointManganese.value = '';
                 elements.pointNotes.value = '';
                 elements.saveBtn.textContent = `更新点位 "${point.name}" 信息`;
                 elements.startSelectLocationBtn.style.display = 'none';
-                updateUIPermissions(); // 确保表单字段状态正确
+                updateUIPermissions();
                 showToast(`正在编辑点位 "${point.name}" 的基本信息。`, 'info');
 
             } else if (target.classList.contains('delete-point-btn')) {
@@ -991,7 +1032,7 @@
                     saveAllPointsData();
                     renderMarkers();
                     refreshPointList();
-                    populatePointDropdown(); // 删除点位后刷新下拉菜单
+                    populatePointDropdown();
                     if (appState.selectedPointId === pointId) closeDataPanel();
                     showToast('点位已删除。', 'success');
                 }
@@ -1006,7 +1047,7 @@
             loadAllPointsData();
             initMap();
             updateUIPermissions();
-            populatePointDropdown(); // 初始化时填充下拉菜单
+            populatePointDropdown();
 
             elements.map233Btn.addEventListener('click', () => switchMap('233'));
             elements.map666Btn.addEventListener('click', () => switchMap('666'));
@@ -1014,7 +1055,6 @@
             elements.adminPanelCloseBtn.addEventListener('click', () => elements.adminPanelOverlay.style.display = 'none');
             elements.adminLoginConfirmBtn.addEventListener('click', handleAdminLogin);
             elements.adminPasswordInput.addEventListener('keypress', e => e.key === 'Enter' && handleAdminLogin());
-            elements.adminOperatorNameInput.addEventListener('keypress', e => e.key === 'Enter' && handleAdminLogin());
             elements.saveBtn.addEventListener('click', savePointData);
             elements.startSelectLocationBtn.addEventListener('click', () => {
                 appState.isSelectingLocation = true;
@@ -1031,7 +1071,7 @@
             
             elements.addTabButton.addEventListener('click', () => handleTabSwitch('add-tab'));
             elements.manageTabButton.addEventListener('click', () => handleTabSwitch('manage-tab'));
-            elements.selectPointDropdown.addEventListener('change', handlePointDropdownChange); // 监听下拉菜单变化
+            elements.selectPointDropdown.addEventListener('change', handlePointDropdownChange);
 
             document.querySelector('.collapse-btn').addEventListener('click', function() {
                 const icon = this.querySelector('i');
@@ -1043,7 +1083,12 @@
             elements.loadFromCloudBtn.addEventListener('click', loadFromGitHub);
             document.querySelector('.export-btn').addEventListener('click', exportToExcel);
             elements.pointsContainer.addEventListener('click', handlePointListClick);
-            elements.dataSidebar.addEventListener('click', e => { if (e.target.classList.contains('close-btn')) closeDataPanel(); });
+            elements.dataSidebar.addEventListener('click', e => { 
+                const closeButton = e.target.closest('.close-btn');
+                if (closeButton) {
+                    closeDataPanel();
+                }
+            });
 
             mapResizeObserver = new ResizeObserver(entries => {
                 for (let entry of entries) {
