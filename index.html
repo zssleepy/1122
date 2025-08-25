@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>矿业环境监测系统</title>
+    <title>贺州市金琪矿业环境监测系统</title>
     <!-- 外部库的引入 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -40,8 +40,32 @@
         button:disabled { background: #445566; cursor: not-allowed; opacity: 0.6; }
         .data-content { flex: 1; overflow-y: auto; padding-right: 10px; }
         .data-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid rgba(74, 175, 80, 0.4); }
-        .close-btn { background: rgba(255, 255, 255, 0.1); color: #a8e6ff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; box-shadow: none; }
-        .close-btn:hover { background: #e74c3c; color: white; border-color: transparent; transform: scale(1.1) rotate(90deg); box-shadow: 0 0 15px rgba(231, 76, 60, 0.6); }
+        
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1); /* 半透明背景 */
+            color: #a8e6ff; /* 图标颜色与主题文字颜色匹配 */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* 轻微的边框 */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: none; /* 移除默认阴影 */
+        }
+
+        .close-btn:hover {
+            background: #e74c3c; /* 悬停时变红 */
+            color: white; /* 图标变白 */
+            border-color: transparent;
+            transform: scale(1.1) rotate(90deg); /* 放大并旋转 */
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.6); /* 添加红色光晕效果 */
+        }
+        /* --- 样式修改结束 --- */
+
         .admin-panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 2000; display: none; justify-content: center; align-items: center; }
         .admin-panel-content { background: rgba(15, 30, 45, 0.98); border-radius: 15px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8); padding: 35px; width: 480px; max-width: 90%; color: #ecf0f1; backdrop-filter: blur(12px); border: 1px solid rgba(74, 175, 80, 0.4); position: relative; }
         .admin-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid rgba(230, 126, 34, 0.45); }
@@ -109,7 +133,7 @@
         <div class="header-left">
             <i class="fas fa-industry header-icon"></i>
             <div>
-                <h1 class="company-title">矿业有限责任公司</h1>
+                <h1 class="company-title">贺州市金琪矿业有限责任公司</h1>
                 <p class="company-subtitle">环境监测系统</p>
             </div>
         </div>
@@ -181,15 +205,13 @@
                     </div>
                 </div>
                 <div class="github-config-section">
-                    <h3 class="github-config-title"><i class="fab fa-github"></i> GitHub云端存储</h3>
-                    <!-- MODIFIED: 隐藏了输入框，因为现在从配置对象读取 -->
-                    <div class="form-group" style="display:none;"><label for="github-owner">仓库拥有者</label><input type="text" id="github-owner" placeholder="输入GitHub用户名"></div>
-                    <div class="form-group" style="display:none;"><label for="github-repo">仓库名称</label><input type="text" id="github-repo" placeholder="输入仓库名称"></div>
-                    <div class="form-group" style="display:none;"><label for="github-file">数据文件名</label><input type="text" id="github-file" value="data.json" placeholder="例如: data.json"></div>
-                    <div class="form-group" style="display:none;"><label for="github-token">GitHub个人访问令牌</label><input type="password" id="github-token" placeholder="输入GitHub访问令牌"><span class="value-info">需要repo权限（仅管理员使用）</span></div>
+                    <h3 class="github-config-title"><i class="fab fa-github"></i> GitHub云端存储配置</h3>
+                    <div class="form-group"><label for="github-owner">仓库拥有者</label><input type="text" id="github-owner" placeholder="输入GitHub用户名"></div>
+                    <div class="form-group"><label for="github-repo">仓库名称</label><input type="text" id="github-repo" placeholder="输入仓库名称"></div>
+                    <div class="form-group"><label for="github-file">数据文件名</label><input type="text" id="github-file" value="data.json" placeholder="例如: data.json"></div>
+                    <div class="form-group"><label for="github-token">GitHub个人访问令牌</label><input type="password" id="github-token" placeholder="输入GitHub访问令牌"><span class="value-info">需要repo权限（仅管理员使用）</span></div>
                     <button class="cloud-sync-btn" id="save-to-cloud-btn"><i class="fas fa-cloud-upload-alt"></i> 保存数据到云端</button>
-                    <!-- MODIFIED: 移除了手动加载按钮，因为现在是自动加载 -->
-                    <!-- <button class="cloud-sync-btn" id="load-from-cloud-btn" style="margin-top: 10px; background: linear-gradient(135deg, #1abc9c, #16a085);"><i class="fas fa-cloud-download-alt"></i> 从云端加载数据</button> -->
+                    <button class="cloud-sync-btn" id="load-from-cloud-btn" style="margin-top: 10px; background: linear-gradient(135deg, #1abc9c, #16a085);"><i class="fas fa-cloud-download-alt"></i> 从云端加载数据</button>
                     <div id="sync-status" class="sync-status"></div>
                     <div id="last-sync" class="last-sync"></div>
                 </div>
@@ -212,17 +234,6 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-
-        // =================================================================================
-        // 1. GitHub 云端存储配置
-        // =================================================================================
-        const githubConfig = {
-            owner: 'zsseepy',       // GitHub用户名
-            repo: '1122',   // 存放数据文件的仓库名
-            file: 'data.json',                   // 数据文件名
-            token: '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' // 访问令牌
-        };
-        // =================================================================================
 
         const ADMIN_PASSWORD = 'kkhhjjj'; 
 
@@ -285,7 +296,7 @@
             addTab: document.getElementById('add-tab'),
             manageTab: document.getElementById('manage-tab'),
             saveToCloudBtn: document.getElementById('save-to-cloud-btn'),
-            // loadFromCloudBtn: document.getElementById('load-from-cloud-btn'), // 移除
+            loadFromCloudBtn: document.getElementById('load-from-cloud-btn'),
             syncStatus: document.getElementById('sync-status'),
             lastSync: document.getElementById('last-sync'),
             githubOwner: document.getElementById('github-owner'),
@@ -305,16 +316,12 @@
             elements.syncStatus.textContent = message;
             elements.syncStatus.className = `sync-status ${type}`;
             elements.syncStatus.style.display = 'block';
-            if (type !== 'sync-loading') {
-                 setTimeout(() => { elements.syncStatus.style.display = 'none'; }, 5000);
-            }
+            setTimeout(() => { elements.syncStatus.style.display = 'none'; }, 5000);
         };
 
         const updateLastSyncTime = () => {
-            const syncTime = new Date().toLocaleString();
-            elements.lastSync.textContent = `最后同步: ${syncTime}`;
+            elements.lastSync.textContent = `最后同步: ${new Date().toLocaleString()}`;
             elements.lastSync.style.display = 'block';
-            localStorage.setItem('lastSyncTime', syncTime);
         };
 
         const parseManganeseInput = (inputValue) => {
@@ -772,7 +779,12 @@
             elements.addTabButton.disabled = !isAdmin;
             elements.manageTabButton.disabled = !isAdmin;
             elements.saveBtn.disabled = !isAdmin;
+            elements.githubOwner.disabled = !isAdmin;
+            elements.githubRepo.disabled = !isAdmin;
+            elements.githubFile.disabled = !isAdmin;
+            elements.githubToken.disabled = !isAdmin;
             elements.saveToCloudBtn.disabled = !isAdmin;
+            elements.loadFromCloudBtn.disabled = !isAdmin;
             
             const isEditingRecord = appState.editingRecordId !== null;
             const isAddingNewPoint = elements.selectPointDropdown.value === 'new-point' && appState.selectedPointId === null;
@@ -797,7 +809,7 @@
             document.querySelectorAll('.admin-only-cell').forEach(cell => cell.style.display = isAdmin ? 'table-cell' : 'none');
         }
 
-        function loadFromLocalStorage() {
+        function loadAllPointsData() {
             try {
                 const storedData = localStorage.getItem('allMapsPointsData');
                 if (storedData) appState.allMapsPointsData = JSON.parse(storedData);
@@ -813,11 +825,9 @@
 
         async function saveToGitHub() {
             if (!appState.isLoggedIn) return showToast('请登录管理员账号才能保存到云端。', 'error');
-            
-            // MODIFIED: 使用 githubConfig 对象
-            const { owner, repo, file, token } = githubConfig;
-            if (!owner || !repo || !file || !token) return showToast('请在代码中配置完整的GitHub信息！', 'error');
-            
+            const { githubOwner, githubRepo, githubFile, githubToken } = elements;
+            const owner = githubOwner.value.trim(), repo = githubRepo.value.trim(), file = githubFile.value.trim(), token = githubToken.value.trim();
+            if (!owner || !repo || !file || !token) return showToast('请填写完整的GitHub配置信息！', 'error');
             updateSyncStatus('正在保存数据到GitHub...', 'sync-loading');
             try {
                 let sha = null;
@@ -846,50 +856,34 @@
             }
         }
 
-        // MODIFIED: 函数名修改，并增加了返回值来表示成功或失败
-        async function loadFromGitHub(isInitialLoad = false) {
-            // MODIFIED: 使用 githubConfig 对象
-            const { owner, repo, file, token } = githubConfig;
-            if (!owner || !repo || !file) {
-                if (!isInitialLoad) showToast('请在代码中配置GitHub仓库信息！', 'error');
-                return false;
-            }
-            
-            // NEW: 仅在手动调用时显示加载状态，启动时在 init 函数中控制
-            if (!isInitialLoad) updateSyncStatus('正在从GitHub加载数据...', 'sync-loading');
-            
+        async function loadFromGitHub() {
+            const { githubOwner, githubRepo, githubFile, githubToken } = elements;
+            const owner = githubOwner.value.trim(), repo = githubRepo.value.trim(), file = githubFile.value.trim(), token = githubToken.value.trim();
+            if (!owner || !repo || !file) return showToast('请填写GitHub仓库信息！', 'error');
+            updateSyncStatus('正在从GitHub加载数据...', 'sync-loading');
             try {
-                const options = { headers: { 'User-Agent': 'Mining-Monitoring-System', 'Accept': 'application/vnd.github.v3+json' } };
-                // 仅当提供了token时才添加Authorization头，以便于读取公开仓库的数据（尽管不推荐）
+                const options = { headers: { 'User-Agent': 'Mining-Monitoring-System' } };
                 if (token) options.headers['Authorization'] = `token ${token}`;
-
                 const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${file}`, options);
                 if (!response.ok) throw new Error('加载失败: ' + ((await response.json()).message || response.statusText));
                 
-                const data = await response.json();
-                if (!data.content) throw new Error('GitHub返回的数据中没有内容。');
-
-                const newData = JSON.parse(base64DecodeUnicode(data.content));
-                
+                const newData = JSON.parse(base64DecodeUnicode((await response.json()).content));
                 if (typeof newData === 'object' && newData['233'] && newData['666']) {
                     appState.allMapsPointsData = newData;
-                    saveAllPointsData(); // 将云端数据同步到本地
+                    saveAllPointsData();
+                    renderMarkers();
+                    refreshPointList();
+                    closeDataPanel();
+                    updateSyncStatus('数据加载成功！', 'sync-success');
                     updateLastSyncTime();
-                    if (!isInitialLoad) {
-                       updateSyncStatus('数据加载成功！', 'sync-success');
-                       showToast('数据已从云端加载！', 'success');
-                    }
-                    return true; // 表示成功
+                    showToast('数据已从云端加载！', 'success');
                 } else {
                     throw new Error('无效的数据格式');
                 }
             } catch (error) {
                 console.error('从GitHub加载失败:', error);
-                if (!isInitialLoad) {
-                    updateSyncStatus(`加载失败: ${error.message}`, 'sync-error');
-                    showToast(`加载失败: ${error.message}`, 'error');
-                }
-                return false; // 表示失败
+                updateSyncStatus(`加载失败: ${error.message}`, 'sync-error');
+                showToast(`加载失败: ${error.message}`, 'error');
             }
         }
 
@@ -1049,39 +1043,12 @@
         
         let mapResizeObserver;
 
-        // MODIFIED: `init` function is now `async` to handle the initial cloud data load
-        async function init() {
-            // NEW: 自动填充配置到（隐藏的）输入框中
-            elements.githubOwner.value = githubConfig.owner;
-            elements.githubRepo.value = githubConfig.repo;
-            elements.githubFile.value = githubConfig.file;
-            elements.githubToken.value = githubConfig.token;
-
-            // NEW: 启动时尝试从云端加载
-            updateSyncStatus('正在从云端同步数据...', 'sync-loading');
-            const cloudLoadSuccess = await loadFromGitHub(true); // `true`表示这是初始加载
-
-            if (cloudLoadSuccess) {
-                updateSyncStatus('云端数据同步成功！', 'sync-success');
-                showToast('已从云端加载最新数据。', 'success');
-            } else {
-                // 如果云端加载失败，回退到本地数据
-                updateSyncStatus('云端同步失败，加载本地备份数据。', 'sync-error');
-                showToast('云端同步失败，已加载本地数据。', 'error');
-                loadFromLocalStorage();
-                const lastSyncTime = localStorage.getItem('lastSyncTime');
-                if (lastSyncTime) {
-                    elements.lastSync.textContent = `最后同步: ${lastSyncTime}`;
-                    elements.lastSync.style.display = 'block';
-                }
-            }
-            
-            // 正常初始化UI
+        function init() {
+            loadAllPointsData();
             initMap();
             updateUIPermissions();
             populatePointDropdown();
 
-            // 事件监听器
             elements.map233Btn.addEventListener('click', () => switchMap('233'));
             elements.map666Btn.addEventListener('click', () => switchMap('666'));
             elements.adminToggleBtn.addEventListener('click', () => appState.isLoggedIn ? handleAdminLogout() : (elements.adminPanelOverlay.style.display = 'flex'));
@@ -1113,7 +1080,7 @@
             });
 
             elements.saveToCloudBtn.addEventListener('click', saveToGitHub);
-            // elements.loadFromCloudBtn.addEventListener('click', loadFromGitHub); // 移除
+            elements.loadFromCloudBtn.addEventListener('click', loadFromGitHub);
             document.querySelector('.export-btn').addEventListener('click', exportToExcel);
             elements.pointsContainer.addEventListener('click', handlePointListClick);
             elements.dataSidebar.addEventListener('click', e => { 
